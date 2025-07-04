@@ -1,7 +1,7 @@
 
 
-<img src="[https://raw.github.com/alejoduque/dronetones/master/imgs/V2_ascii.jpg](https://raw.githubusercontent.com/alejoduque/ResearchTimeline/refs/heads/master/logoasciirts.jpg)" /> <br>
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::<a href=https://github.com/alejoduque/dronetones/wiki/Drone-Sound> RTS</a>
+<img src="https://raw.github.com/alejoduque/dronetones/master/imgs/V2_ascii.jpg" /> <br>
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::<a href=https://#> RTS</a>
 
 
 ## Cronograma de Investigación Distribuida 
