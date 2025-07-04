@@ -1,6 +1,5 @@
-## (Español)
 
-### Cronograma de Investigación Distribuida 
+## Cronograma de Investigación Distribuida 
 
 Este proyecto es una aplicación de React construida con Vite y TypeScript. El objetivo principal es proporcionar una visualización de línea de tiempo interactiva y no lineal para una tesis doctoral.
 
@@ -30,8 +29,6 @@ La aplicación se divide en varios componentes para una mejor organización y ma
 # Scattered Research Timeline -SRT-
 
 This is a React application that provides a non-linear, interactive timeline visualization for a doctoral thesis.
-
-## (English)
 
 ### Project Structure
 
