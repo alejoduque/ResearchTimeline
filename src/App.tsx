@@ -328,7 +328,6 @@ const ScatteredThesisTimeline = () => {
     await new Promise(resolve => setTimeout(resolve, 2000)); // Simular delay de red
 
     // --- INICIO: Lógica de la API de Gemini (para reemplazar) ---
-    // Aquí es donde harías la llamada real a tu backend o directamente a la API de Gemini
     /*
     try {
       const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=TU_API_KEY_AQUI', {
@@ -361,7 +360,7 @@ const ScatteredThesisTimeline = () => {
     // --- FIN: Lógica de la API de Gemini ---
 
     // --- INICIO: Respuesta simulada (para eliminar al implementar la API) ---
-    const mockResponse = `**Resumen de Investigación:**\nLas notas exploran la intersección entre bioacústica, arte y gobernanza interespecies, proponiendo un nuevo modelo de "biocracia".\n\n**Autores Clave:**\n1. **Donna Haraway:** Por sus trabajos sobre relaciones multiespecies.\n2. **Bruno Latour:** Por la Teoría del Actor-Red y el "Parlamento de las Cosas".\n3. **Eduardo Kohn:** Por su concepto de "cómo piensan los bosques".\n\n**Exploración Futura:**\n1. Desarrollar un prototipo de DAO para la gestión de un ecosistema específico.\n2. Investigar las implicaciones éticas de la tokenización de la participación no-humana.`;
+    const mockResponse = `**Resumen de Investigación:**\nLas notas exploran la intersección entre bioacústica, arte y gobernanza interespecies, proponiendo un nuevo modelo de "biocracia".\n\n**Autores Clave:**\n1. **Donna Haraway:** Por sus trabajos sobre relaciones multiespecies.\n2. **Bruno Latour:** Por la Teoría del Actor-Red y el "Parlamento de las Cosas".\n3. **Eduardo Kohn:** Por su concepto de "cómo piensan los bosques".\n\n**Exploración Futura:**\n1. Desarrollar un prototipo de DAO para la gestión de un ecosistema específico.\n2. Investigar las implicaciones éticas de la tokenización de la participación no-humana.`
     setAiResearchResult(mockResponse);
     // --- FIN: Respuesta simulada ---
 
@@ -378,7 +377,7 @@ const ScatteredThesisTimeline = () => {
     <div className="w-full max-w-7xl mx-auto p-6 bg-gray-50 font-sans">
       <div className="mb-6">
         <h1 className="text-4xl font-bold text-gray-800 mb-1">
-          Visualización Dispersa - Tesis Doctoral
+          Cronograma de Investigación Distribuida
         </h1>
         <p className="text-gray-500">
           Explora tu investigación de forma no-lineal. Arrastra para mover, Shift+Click para conectar.
@@ -441,4 +440,3 @@ const ScatteredThesisTimeline = () => {
 };
 
 export default ScatteredThesisTimeline;
-
