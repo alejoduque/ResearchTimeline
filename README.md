@@ -1,18 +1,6 @@
-         _         _          _        
-        /\ \      /\ \       / /\      
-       /  \ \     \_\ \     / /  \     
-      / /\ \ \    /\__ \   / / /\ \__  
-     / / /\ \_\  / /_ \ \ / / /\ \___\ 
-    / / /_/ / / / / /\ \ \\ \ \ \/___/ 
-   / / /__\/ / / / /  \/_/ \ \ \       
-  / / /_____/ / / /    _    \ \ \      
- / / /\ \ \  / / /    /_/\__/ / /      
-/ / /  \ \ \/_/ /     \ \/___/ /       
-\/_/    \_\/\_\/       \_____\/        
-                                       
-==========
 
-<img src="https://raw.github.com/alejoduque/dronetones/master/imgs/V2_ascii.jpg" /> <br>
+
+<img src="[https://raw.github.com/alejoduque/dronetones/master/imgs/V2_ascii.jpg](https://raw.githubusercontent.com/alejoduque/ResearchTimeline/refs/heads/master/logoasciirts.jpg)" /> <br>
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::<a href=https://github.com/alejoduque/dronetones/wiki/Drone-Sound> RTS</a>
 
 
