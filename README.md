@@ -1,4 +1,4 @@
-# Scattered Thesis Timeline
+# Scattered Research Timeline -SRT-
 
 This is a React application that provides a non-linear, interactive timeline visualization for a doctoral thesis.
 
