@@ -1,3 +1,32 @@
+## (Español)
+
+### Cronograma de Investigación Distribuida 
+
+Este proyecto es una aplicación de React construida con Vite y TypeScript. El objetivo principal es proporcionar una visualización de línea de tiempo interactiva y no lineal para una tesis doctoral.
+
+La aplicación se divide en varios componentes para una mejor organización y mantenibilidad:
+
+*   `App.tsx`: El componente principal que contiene el estado y la lógica de la aplicación. Orquesta la interacción entre todos los demás componentes.
+*   `Controls.tsx`: La barra superior que contiene los filtros, el campo para añadir nuevas tareas y los botones de acción generales como "Exportar" o "Aleatorizar".
+*   `Legend.tsx`: Un componente simple que muestra la leyenda codificada por colores para los capítulos de la tesis.
+*   `TimelineCanvas.tsx`: El área interactiva principal donde se renderizan las tareas y sus conexiones usando SVG. Maneja todos los eventos del ratón para arrastrar, conectar y seleccionar tareas.
+*   `TaskNode.tsx`: Representa una única tarea (un círculo) dentro del `TimelineCanvas`.
+*   `TaskDetailsModal.tsx`: Una ventana modal que aparece cuando se selecciona una tarea, permitiendo al usuario ver y editar detalles, añadir notas y realizar otras acciones específicas de la tarea.
+
+### Cómo Ejecutarlo
+
+1.  **Instalar dependencias:**
+    ```bash
+    npm install
+    ```
+2.  **Iniciar el servidor de desarrollo:**
+    ```bash
+    npm run dev
+    ```
+3.  Abre tu navegador y navega a la URL proporcionada por Vite (normalmente `http://localhost:5173`).
+
+---
+
 # Scattered Research Timeline -SRT-
 
 This is a React application that provides a non-linear, interactive timeline visualization for a doctoral thesis.
@@ -29,31 +58,5 @@ The application is broken down into several components for better organization a
     ```
 3.  Open your browser and navigate to the URL provided by Vite (usually `http://localhost:5173`).
 
----
 
-## (Español)
 
-### Estructura del Proyecto
-
-Este proyecto es una aplicación de React construida con Vite y TypeScript. El objetivo principal es proporcionar una visualización de línea de tiempo interactiva y no lineal para una tesis doctoral.
-
-La aplicación se divide en varios componentes para una mejor organización y mantenibilidad:
-
-*   `App.tsx`: El componente principal que contiene el estado y la lógica de la aplicación. Orquesta la interacción entre todos los demás componentes.
-*   `Controls.tsx`: La barra superior que contiene los filtros, el campo para añadir nuevas tareas y los botones de acción generales como "Exportar" o "Aleatorizar".
-*   `Legend.tsx`: Un componente simple que muestra la leyenda codificada por colores para los capítulos de la tesis.
-*   `TimelineCanvas.tsx`: El área interactiva principal donde se renderizan las tareas y sus conexiones usando SVG. Maneja todos los eventos del ratón para arrastrar, conectar y seleccionar tareas.
-*   `TaskNode.tsx`: Representa una única tarea (un círculo) dentro del `TimelineCanvas`.
-*   `TaskDetailsModal.tsx`: Una ventana modal que aparece cuando se selecciona una tarea, permitiendo al usuario ver y editar detalles, añadir notas y realizar otras acciones específicas de la tarea.
-
-### Cómo Ejecutarlo
-
-1.  **Instalar dependencias:**
-    ```bash
-    npm install
-    ```
-2.  **Iniciar el servidor de desarrollo:**
-    ```bash
-    npm run dev
-    ```
-3.  Abre tu navegador y navega a la URL proporcionada por Vite (normalmente `http://localhost:5173`).
