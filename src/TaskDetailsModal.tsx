@@ -74,10 +74,10 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       <div 
         className="bg-white rounded-lg shadow-xl overflow-hidden" 
         style={{
-          width: '90vw',
-          maxWidth: '1200px',
-          height: '90vh',
-          maxHeight: '800px'
+          width: '98vw',
+          maxWidth: '1600px',
+          height: '95vh',
+          maxHeight: '900px'
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -91,11 +91,13 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto" style={{ height: 'calc(90vh - 80px)', maxHeight: 'calc(800px - 80px)' }}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-6">
+        <div className="p-6 overflow-y-auto" style={{ height: 'calc(95vh - 80px)', maxHeight: 'calc(900px - 80px)' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            {/* Left column - Task info (1/4 width) */}
+            <div className="lg:col-span-1 space-y-6">
               <div className="bg-gray-50 rounded-lg p-4">
-                <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 gap-4 mb-4">
                   <div className="text-center">
                     <div className="text-xs text-gray-500 mb-1">Capítulo</div>
                     <div className="text-lg font-semibold text-blue-600">{selectedTask.chapter}</div>
@@ -120,7 +122,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 text-center">
                   <strong>Fecha:</strong> {getWeekDate(selectedTask.startWeek)}
                 </div>
               </div>
@@ -162,7 +164,8 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               </div>
             </div>
 
-            <div className="space-y-6">
+            {/* Right column - Notes area (3/4 width) */}
+            <div className="lg:col-span-3 space-y-6">
               <div className="border rounded-lg overflow-hidden">
                 <div className="bg-gray-50 p-3 border-b">
                   <div className="flex items-center justify-between">
@@ -193,8 +196,8 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                   value={notesText}
                   onChange={(e) => setNotesText(e.target.value)}
                   className="w-full p-3 border-none outline-none resize-vertical"
-                  style={{ minHeight: '200px', maxHeight: '500px' }}
-                  placeholder="Hola! Escribe tus notas aquí. Puedes usar Markdown:&#10;&#10;# Encabezado 1&#10;## Encabezado 2&#10;**Negrita**&#10;*Cursiva*&#10;- Lista de elementos&#10;[Enlace](http://ejemplo.com)"
+                  style={{ minHeight: '400px', maxHeight: '600px' }}
+                  placeholder="Escribe tus notas aquí. Puedes usar Markdown:&#10;&#10;# Encabezado 1&#10;## Encabezado 2&#10;**Negrita**&#10;*Cursiva*&#10;- Lista de elementos&#10;[Enlace](http://ejemplo.com)"
                 />
               </div>
               
