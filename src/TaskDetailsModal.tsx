@@ -59,85 +59,143 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   return (
     <div className="floating-modal-overlay" onClick={() => setSelectedTask(null)}>
       <div className="floating-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button onClick={() => setSelectedTask(null)} className="floating-modal-close">
-          <X size={24} />
-        </button>
+        <div className="floating-modal-header">
+          <h3>{selectedTask.title}</h3>
+          <button onClick={() => setSelectedTask(null)} className="floating-modal-close">
+            <X size={20} />
+          </button>
+        </div>
 
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="w-full md:w-1/2">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">{selectedTask.title}</h2>
-            <div className="text-sm text-gray-500 mb-4 space-y-1">
-              <p><strong>Capítulo:</strong> {selectedTask.chapter}</p>
-              <p><strong>Semana de Inicio:</strong> {selectedTask.startWeek} ({getWeekDate(selectedTask.startWeek)})</p>
-              <p><strong>Prioridad:</strong> 
-                <span 
-                  onClick={() => changePriority(selectedTask.id)}
-                  className={`cursor-pointer font-semibold px-2 py-1 rounded-full text-xs ml-2 ${selectedTask.priority === 'high' ? 'bg-red-100 text-red-700' : selectedTask.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
-                  {selectedTask.priority.charAt(0).toUpperCase() + selectedTask.priority.slice(1)}
-                </span>
-              </p>
-            </div>
+        <div className="floating-modal-body">
+          <div className="modal-main-content">
+            <div className="modal-columns">
+              <div className="modal-left-column">
+                <div className="task-info-compact">
+                  <div className="task-info-grid">
+                    <div className="task-info-item">
+                      <div className="task-info-label">Capítulo</div>
+                      <div className="task-info-value task-info-chapter">{selectedTask.chapter}</div>
+                    </div>
+                    <div className="task-info-item">
+                      <div className="task-info-label">Semana</div>
+                      <div className="task-info-value task-info-week">{selectedTask.startWeek}</div>
+                    </div>
+                    <div className="task-info-item">
+                      <div className="task-info-label">Prioridad</div>
+                      <div 
+                        className="task-info-value task-info-priority"
+                        onClick={() => changePriority(selectedTask.id)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {selectedTask.priority.charAt(0).toUpperCase() + selectedTask.priority.slice(1)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-2">
+                    <strong>Fecha:</strong> {getWeekDate(selectedTask.startWeek)}
+                  </div>
+                </div>
 
-            <div className="space-y-4">
-              <ActionButton onClick={saveNotes} icon={Save} className="w-full bg-blue-500 hover:bg-blue-600">
-                Guardar Cambios
-              </ActionButton>
-              <ActionButton onClick={() => setCalendarAlert(!calendarAlert)} icon={BellOff} className={`w-full ${calendarAlert ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-300 hover:bg-gray-400'}`}>
-                {calendarAlert ? 'Quitar Alerta' : 'Añadir Alerta de Calendario'}
-              </ActionButton>
-              <ActionButton onClick={() => deleteTask(selectedTask.id)} icon={Trash2} className="w-full bg-red-500 hover:bg-red-600">
-                Borrar Tarea
-              </ActionButton>
-            </div>
-          </div>
-
-          <div className="w-full md:w-1/2">
-            <div className="markdown-section">
-              <div className="markdown-header">
-                <h3 className="markdown-label">Notas y Observaciones</h3>
-                <div className="markdown-toolbar">
-                  <button className="toolbar-button bold" onClick={() => handleMarkdownAction('bold')}>
-                    <Bold size={16} /> Bold
+                <div className="task-actions-compact">
+                  <button 
+                    onClick={saveNotes} 
+                    className="compact-action-button action-button save"
+                  >
+                    <Save size={16} />
+                    Guardar
                   </button>
-                  <button className="toolbar-button italic" onClick={() => handleMarkdownAction('italic')}>
-                    <Italic size={16} /> Italic
+                  <button 
+                    onClick={() => changePriority(selectedTask.id)} 
+                    className="compact-action-button action-button priority"
+                  >
+                    Cambiar Prioridad
                   </button>
-                  <button className="toolbar-button link" onClick={() => handleMarkdownAction('link')}>
-                    <Link size={16} /> Link
+                  <button 
+                    onClick={() => deleteTask(selectedTask.id)} 
+                    className="compact-action-button action-button delete"
+                  >
+                    <Trash2 size={16} />
+                    Eliminar
                   </button>
                 </div>
-              </div>
-              <div className="markdown-editor-container">
-                <textarea
-                  value={notesText}
-                  onChange={(e) => setNotesText(e.target.value)}
-                  className="markdown-textarea"
-                  placeholder="Escribe tus notas aquí. Puedes usar Markdown:\n\n# Encabezado 1\n## Encabezado 2\n**Negrita**\n*Cursiva*\n- Lista de elementos\n[Enlace](http://ejemplo.com)"
-                />
-              </div>
-            </div>
-            
-            <div className="ai-research-section">
-              <div className="ai-research-header">
-                <h3 className="ai-research-title">
-                  <Zap size={20} /> Asistente de Investigación AI
-                </h3>
-                <button 
-                  onClick={handleAiResearch} 
-                  className="ai-research-button" 
-                  disabled={isResearching}
-                >
-                  {isResearching ? 'Investigando...' : 'Investigar con AI'}
-                </button>
-              </div>
-              {aiResearchResult && (
-                <div className="ai-research-result">
-                  {aiResearchResult}
+
+                <div className="calendar-alert-section">
+                  <input
+                    type="checkbox"
+                    checked={calendarAlert}
+                    onChange={(e) => setCalendarAlert(e.target.checked)}
+                    className="calendar-checkbox"
+                  />
+                  <label className="calendar-label">
+                    <BellOff size={16} />
+                    Alerta de Calendario
+                  </label>
                 </div>
-              )}
+              </div>
+
+              <div className="modal-right-column">
+                <div className="markdown-section">
+                  <div className="markdown-header">
+                    <h3 className="markdown-label">Notas y Observaciones</h3>
+                    <div className="markdown-toolbar">
+                      <button className="toolbar-button bold" onClick={() => handleMarkdownAction('bold')}>
+                        <Bold size={16} /> Bold
+                      </button>
+                      <button className="toolbar-button italic" onClick={() => handleMarkdownAction('italic')}>
+                        <Italic size={16} /> Italic
+                      </button>
+                      <button className="toolbar-button link" onClick={() => handleMarkdownAction('link')}>
+                        <Link size={16} /> Link
+                      </button>
+                    </div>
+                  </div>
+                  <div className="markdown-editor-container">
+                    <textarea
+                      value={notesText}
+                      onChange={(e) => setNotesText(e.target.value)}
+                      className="markdown-textarea"
+                      placeholder="Escribe tus notas aquí. Puedes usar Markdown:&#10;&#10;# Encabezado 1&#10;## Encabezado 2&#10;**Negrita**&#10;*Cursiva*&#10;- Lista de elementos&#10;[Enlace](http://ejemplo.com)"
+                    />
+                  </div>
+                </div>
+                
+                <div className="ai-research-section">
+                  <div className="ai-research-header">
+                    <h3 className="ai-research-title">
+                      <Zap size={18} /> Asistente AI
+                    </h3>
+                    <button 
+                      onClick={handleAiResearch} 
+                      className="ai-research-button" 
+                      disabled={isResearching}
+                    >
+                      {isResearching ? (
+                        <>
+                          <div className="spinning-loader">⟳</div>
+                          Investigando...
+                        </>
+                      ) : (
+                        <>
+                          <Zap size={16} />
+                          Investigar
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  {aiResearchResult && (
+                    <div className="ai-research-result">
+                      <div style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>
+                        {aiResearchResult}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        
+        <div className="modal-resize-handle"></div>
       </div>
     </div>
   );
