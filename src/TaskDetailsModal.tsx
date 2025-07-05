@@ -40,10 +40,28 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   isResearching,
   aiResearchResult
 }) => {
-  const [position, setPosition] = useState({ x: 100, y: 100 });
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isInitialized, setIsInitialized] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  // Center modal on initial load
+  useEffect(() => {
+    if (modalRef.current && !isInitialized) {
+      // Use setTimeout to ensure the modal is fully rendered
+      setTimeout(() => {
+        const rect = modalRef.current?.getBoundingClientRect();
+        if (rect) {
+          setPosition({
+            x: Math.max(0, (window.innerWidth - rect.width) / 2),
+            y: Math.max(0, (window.innerHeight - rect.height) / 2)
+          });
+          setIsInitialized(true);
+        }
+      }, 10);
+    }
+  }, [selectedTask, isInitialized]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -128,15 +146,19 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           left: `${position.x}px`,
           top: `${position.y}px`,
           width: '85vw',
-          maxWidth: '1400px',
+          maxWidth: '1200px',
+          minWidth: '700px',
           height: '80vh',
-          maxHeight: '700px',
+          maxHeight: '600px',
+          minHeight: '400px',
           backgroundColor: 'rgba(255, 255, 255, 0.85)',
           backdropFilter: 'blur(20px)',
           borderRadius: '2px',
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
           border: '1px solid rgba(0, 0, 0, 0.1)',
-          cursor: isDragging ? 'grabbing' : 'default'
+          cursor: isDragging ? 'grabbing' : 'default',
+          opacity: isInitialized ? 1 : 0,
+          transition: 'opacity 0.2s ease'
         }}
       >
         {/* Header with drag handle */}
@@ -165,19 +187,19 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             <div className="lg:col-span-1 space-y-6">
               {/* Task info in one line */}
               <div className="border border-black border-opacity-10 p-4">
-                <div className="grid grid-cols-4 gap-2 mb-4">
-                  <div className="text-center">
-                    <div className="text-xs text-black opacity-60 mb-1">Capítulo</div>
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  <div className="min-w-0">
+                    <div className="text-xs text-black opacity-60 mb-1 whitespace-nowrap">Capítulo</div>
                     <div className="text-sm font-normal text-black">{selectedTask.chapter}</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-xs text-black opacity-60 mb-1">Semana</div>
+                  <div className="min-w-0">
+                    <div className="text-xs text-black opacity-60 mb-1 whitespace-nowrap">Semana</div>
                     <div className="text-sm font-normal text-black">{selectedTask.startWeek}</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-xs text-black opacity-60 mb-1">Prioridad</div>
+                  <div className="min-w-0">
+                    <div className="text-xs text-black opacity-60 mb-1 whitespace-nowrap">Prioridad</div>
                     <div 
-                      className={`text-sm font-normal cursor-pointer px-2 py-1 text-xs border border-black border-opacity-20 ${
+                      className={`text-sm font-normal cursor-pointer px-2 py-1 text-xs border border-black border-opacity-20 whitespace-nowrap ${
                         selectedTask.priority === 'high' 
                           ? 'bg-black bg-opacity-25 text-black' 
                           : selectedTask.priority === 'medium' 
@@ -189,9 +211,9 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                       {selectedTask.priority.charAt(0).toUpperCase() + selectedTask.priority.slice(1)}
                     </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-xs text-black opacity-60 mb-1">Fecha</div>
-                    <div className="text-sm font-normal text-black">{getWeekDate(selectedTask.startWeek)}</div>
+                  <div className="min-w-0">
+                    <div className="text-xs text-black opacity-60 mb-1 whitespace-nowrap">Fecha</div>
+                    <div className="text-sm font-normal text-black whitespace-nowrap">{getWeekDate(selectedTask.startWeek)}</div>
                   </div>
                 </div>
               </div>
