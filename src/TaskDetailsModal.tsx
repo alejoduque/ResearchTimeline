@@ -57,8 +57,30 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-9999" onClick={() => setSelectedTask(null)}>
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+    <div 
+      className="bg-black bg-opacity-50 flex items-center justify-center p-4" 
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        width: '100vw',
+        height: '100vh'
+      }} 
+      onClick={() => setSelectedTask(null)}
+    >
+      <div 
+        className="bg-white rounded-lg shadow-xl overflow-hidden" 
+        style={{
+          width: '90vw',
+          maxWidth: '1200px',
+          height: '90vh',
+          maxHeight: '800px'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between p-4 border-b bg-gray-50">
           <h3 className="text-xl font-bold text-gray-800">{selectedTask.title}</h3>
           <button 
@@ -69,7 +91,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+        <div className="p-6 overflow-y-auto" style={{ height: 'calc(90vh - 80px)', maxHeight: 'calc(800px - 80px)' }}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="bg-gray-50 rounded-lg p-4">
@@ -170,7 +192,8 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 <textarea
                   value={notesText}
                   onChange={(e) => setNotesText(e.target.value)}
-                  className="w-full h-64 p-3 border-none outline-none resize-none"
+                  className="w-full p-3 border-none outline-none resize-none"
+                  style={{ height: '400px' }}
                   placeholder="Escribe tus notas aquí. Puedes usar Markdown:&#10;&#10;# Encabezado 1&#10;## Encabezado 2&#10;**Negrita**&#10;*Cursiva*&#10;- Lista de elementos&#10;[Enlace](http://ejemplo.com)"
                 />
               </div>
