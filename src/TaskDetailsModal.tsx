@@ -192,9 +192,9 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 <textarea
                   value={notesText}
                   onChange={(e) => setNotesText(e.target.value)}
-                  className="w-full p-3 border-none outline-none resize-none"
-                  style={{ height: '400px' }}
-                  placeholder="Escribe tus notas aquí. Puedes usar Markdown:&#10;&#10;# Encabezado 1&#10;## Encabezado 2&#10;**Negrita**&#10;*Cursiva*&#10;- Lista de elementos&#10;[Enlace](http://ejemplo.com)"
+                  className="w-full p-3 border-none outline-none resize-vertical"
+                  style={{ minHeight: '200px', maxHeight: '500px' }}
+                  placeholder="Hola! Escribe tus notas aquí. Puedes usar Markdown:&#10;&#10;# Encabezado 1&#10;## Encabezado 2&#10;**Negrita**&#10;*Cursiva*&#10;- Lista de elementos&#10;[Enlace](http://ejemplo.com)"
                 />
               </div>
               
