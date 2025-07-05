@@ -40,17 +40,25 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   isResearching,
   aiResearchResult
 }) => {
-  const [position, setPosition] = useState({ x: 50, y: 50 });
+  const [position, setPosition] = useState({ x: 100, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
+      if (isDragging && modalRef.current) {
+        const newX = e.clientX - dragOffset.x;
+        const newY = e.clientY - dragOffset.y;
+        
+        // Keep modal within viewport bounds
+        const rect = modalRef.current.getBoundingClientRect();
+        const maxX = window.innerWidth - rect.width;
+        const maxY = window.innerHeight - rect.height;
+        
         setPosition({
-          x: e.clientX - dragOffset.x,
-          y: e.clientY - dragOffset.y
+          x: Math.max(0, Math.min(newX, maxX)),
+          y: Math.max(0, Math.min(newY, maxY))
         });
       }
     };
@@ -78,6 +86,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         y: e.clientY - rect.top
       });
       setIsDragging(true);
+      e.preventDefault();
     }
   };
 
@@ -350,38 +359,7 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-8">
-      {/* Background content to show transparency effect */}
-      <div className="text-white space-y-6">
-        <h1 className="text-4xl font-bold">Task Management System</h1>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-blue-500 bg-opacity-20 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-3">Próximas Tareas</h2>
-            <ul className="space-y-2">
-              <li>• Revisión de capítulo 3</li>
-              <li>• Encuentro con el equipo</li>
-              <li>• Análisis de datos</li>
-            </ul>
-          </div>
-          <div className="bg-green-500 bg-opacity-20 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-3">Completadas</h2>
-            <ul className="space-y-2">
-              <li>• Investigación inicial</li>
-              <li>• Documentación básica</li>
-              <li>• Configuración del proyecto</li>
-            </ul>
-          </div>
-          <div className="bg-purple-500 bg-opacity-20 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-3">En Progreso</h2>
-            <ul className="space-y-2">
-              <li>• Desarrollo del prototipo</li>
-              <li>• Revisión de literatura</li>
-              <li>• Coordinación con stakeholders</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-gray-100 p-8">
       <TaskDetailsModal
         selectedTask={selectedTask}
         setSelectedTask={setSelectedTask}
