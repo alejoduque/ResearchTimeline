@@ -1,6 +1,13 @@
-import { X, Save, Trash2, BellOff, Bold, Italic, Link, Zap } from 'lucide-react';
-import ActionButton from './ActionButton';
-import type { Task } from './types';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Save, Trash2, BellOff, Bold, Italic, Link, Zap, Move } from 'lucide-react';
+
+interface Task {
+  id: number;
+  title: string;
+  chapter: number;
+  startWeek: number;
+  priority: 'high' | 'medium' | 'low';
+}
 
 interface TaskDetailsModalProps {
   selectedTask: Task | null;
@@ -33,7 +40,46 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   isResearching,
   aiResearchResult
 }) => {
-  if (!selectedTask) return null;
+  const [position, setPosition] = useState({ x: 50, y: 50 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        setPosition({
+          x: e.clientX - dragOffset.x,
+          y: e.clientY - dragOffset.y
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (modalRef.current) {
+      const rect = modalRef.current.getBoundingClientRect();
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+      setIsDragging(true);
+    }
+  };
 
   const handleMarkdownAction = (action: 'bold' | 'italic' | 'link') => {
     let newText = notesText;
@@ -56,66 +102,78 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     setNotesText(newText);
   };
 
+  if (!selectedTask) return null;
+
   return (
     <div 
-      className="bg-black bg-opacity-50 flex items-center justify-center p-4" 
+      className="fixed inset-0 z-50 pointer-events-none"
       style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 9999,
-        width: '100vw',
-        height: '100vh'
-      }} 
-      onClick={() => setSelectedTask(null)}
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        backdropFilter: 'blur(2px)'
+      }}
     >
-      <div 
-        className="bg-white rounded-lg shadow-xl overflow-hidden" 
+      <div
+        ref={modalRef}
+        className="absolute pointer-events-auto"
         style={{
-          width: '98vw',
-          maxWidth: '1600px',
-          height: '95vh',
-          maxHeight: '900px'
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          width: '85vw',
+          maxWidth: '1400px',
+          height: '80vh',
+          maxHeight: '700px',
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '2px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+          cursor: isDragging ? 'grabbing' : 'default'
         }}
-        onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b bg-gray-50">
-          <h3 className="text-xl font-bold text-gray-800">{selectedTask.title}</h3>
+        {/* Header with drag handle */}
+        <div 
+          className="flex items-center justify-between p-4 border-b border-black border-opacity-10 cursor-grab active:cursor-grabbing"
+          onMouseDown={handleMouseDown}
+          style={{ userSelect: 'none' }}
+        >
+          <div className="flex items-center gap-3">
+            <Move size={18} className="text-black opacity-40" />
+            <h3 className="text-xl font-light text-black">{selectedTask.title}</h3>
+          </div>
           <button 
             onClick={() => setSelectedTask(null)} 
-            className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+            className="p-2 hover:bg-black hover:bg-opacity-5 rounded-none transition-colors"
           >
-            <X size={20} />
+            <X size={20} className="text-black opacity-60" />
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto" style={{ height: 'calc(95vh - 80px)', maxHeight: 'calc(900px - 80px)' }}>
+        {/* Content */}
+        <div className="p-6 overflow-y-auto" style={{ height: 'calc(80vh - 80px)', maxHeight: 'calc(700px - 80px)' }}>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             
             {/* Left column - Task info (1/4 width) */}
             <div className="lg:col-span-1 space-y-6">
               {/* Task info in one line */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="border border-black border-opacity-10 p-4">
                 <div className="grid grid-cols-4 gap-2 mb-4">
                   <div className="text-center">
-                    <div className="text-xs text-gray-500 mb-1">Capítulo</div>
-                    <div className="text-sm font-semibold text-blue-600">{selectedTask.chapter}</div>
+                    <div className="text-xs text-black opacity-60 mb-1">Capítulo</div>
+                    <div className="text-sm font-normal text-black">{selectedTask.chapter}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xs text-gray-500 mb-1">Semana</div>
-                    <div className="text-sm font-semibold text-green-600">{selectedTask.startWeek}</div>
+                    <div className="text-xs text-black opacity-60 mb-1">Semana</div>
+                    <div className="text-sm font-normal text-black">{selectedTask.startWeek}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xs text-gray-500 mb-1">Prioridad</div>
+                    <div className="text-xs text-black opacity-60 mb-1">Prioridad</div>
                     <div 
-                      className={`text-sm font-semibold cursor-pointer px-2 py-1 rounded-full text-xs ${
+                      className={`text-sm font-normal cursor-pointer px-2 py-1 text-xs border border-black border-opacity-20 ${
                         selectedTask.priority === 'high' 
-                          ? 'bg-red-100 text-red-700' 
+                          ? 'bg-black bg-opacity-25 text-black' 
                           : selectedTask.priority === 'medium' 
-                          ? 'bg-yellow-100 text-yellow-700' 
-                          : 'bg-green-100 text-green-700'
+                          ? 'bg-black bg-opacity-15 text-black' 
+                          : 'bg-black bg-opacity-8 text-black'
                       }`}
                       onClick={() => changePriority(selectedTask.id)}
                     >
@@ -123,8 +181,8 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xs text-gray-500 mb-1">Fecha</div>
-                    <div className="text-sm font-semibold text-gray-700">{getWeekDate(selectedTask.startWeek)}</div>
+                    <div className="text-xs text-black opacity-60 mb-1">Fecha</div>
+                    <div className="text-sm font-normal text-black">{getWeekDate(selectedTask.startWeek)}</div>
                   </div>
                 </div>
               </div>
@@ -134,20 +192,20 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 <div className="grid grid-cols-3 gap-2">
                   <button 
                     onClick={saveNotes} 
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-2 rounded-lg flex items-center justify-center gap-1 transition-colors text-sm"
+                    className="bg-black text-white px-3 py-2 hover:bg-black hover:bg-opacity-80 flex items-center justify-center gap-1 transition-colors font-light text-sm"
                   >
                     <Save size={14} />
                     Guardar
                   </button>
                   <button 
                     onClick={() => changePriority(selectedTask.id)} 
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-2 rounded-lg transition-colors text-sm"
+                    className="border border-black border-opacity-20 bg-white bg-opacity-60 text-black px-3 py-2 hover:bg-black hover:bg-opacity-8 transition-colors font-light text-sm"
                   >
                     Cambiar P.
                   </button>
                   <button 
                     onClick={() => deleteTask(selectedTask.id)} 
-                    className="bg-red-500 hover:bg-red-600 text-white px-2 py-2 rounded-lg flex items-center justify-center gap-1 transition-colors text-sm"
+                    className="border border-black border-opacity-20 bg-white bg-opacity-60 text-black px-3 py-2 hover:bg-black hover:bg-opacity-8 flex items-center justify-center gap-1 transition-colors font-light text-sm"
                   >
                     <Trash2 size={14} />
                     Eliminar
@@ -155,14 +213,14 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-3 border border-black border-opacity-10">
                 <input
                   type="checkbox"
                   checked={calendarAlert}
                   onChange={(e) => setCalendarAlert(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  className="w-4 h-4 accent-black"
                 />
-                <label className="flex items-center gap-2 text-sm text-gray-700">
+                <label className="flex items-center gap-2 text-sm text-black opacity-70 font-light">
                   <BellOff size={16} />
                   Alerta de Calendario
                 </label>
@@ -171,25 +229,25 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
             {/* Right column - Notes area (3/4 width) */}
             <div className="lg:col-span-3 space-y-6">
-              <div className="border rounded-lg overflow-hidden">
-                <div className="bg-gray-50 p-3 border-b">
+              <div className="border border-black border-opacity-10 overflow-hidden">
+                <div className="p-3 border-b border-black border-opacity-10">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-800">Notas y Observaciones</h3>
+                    <h3 className="font-light text-black">Notas y Observaciones</h3>
                     <div className="flex gap-2">
                       <button 
-                        className="px-2 py-1 bg-white border rounded text-xs hover:bg-gray-50 flex items-center gap-1" 
+                        className="px-2 py-1 border border-black border-opacity-20 text-xs hover:bg-black hover:bg-opacity-8 flex items-center gap-1 font-light text-black" 
                         onClick={() => handleMarkdownAction('bold')}
                       >
                         <Bold size={12} /> Bold
                       </button>
                       <button 
-                        className="px-2 py-1 bg-white border rounded text-xs hover:bg-gray-50 flex items-center gap-1" 
+                        className="px-2 py-1 border border-black border-opacity-20 text-xs hover:bg-black hover:bg-opacity-8 flex items-center gap-1 font-light text-black" 
                         onClick={() => handleMarkdownAction('italic')}
                       >
                         <Italic size={12} /> Italic
                       </button>
                       <button 
-                        className="px-2 py-1 bg-white border rounded text-xs hover:bg-gray-50 flex items-center gap-1" 
+                        className="px-2 py-1 border border-black border-opacity-20 text-xs hover:bg-black hover:bg-opacity-8 flex items-center gap-1 font-light text-black" 
                         onClick={() => handleMarkdownAction('link')}
                       >
                         <Link size={12} /> Link
@@ -200,21 +258,21 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 <textarea
                   value={notesText}
                   onChange={(e) => setNotesText(e.target.value)}
-                  className="w-full p-3 border-none outline-none resize-vertical"
-                  style={{ minHeight: '400px', maxHeight: '600px' }}
+                  className="w-full p-3 border-none outline-none resize-vertical bg-transparent text-black font-light placeholder-black placeholder-opacity-50"
+                  style={{ minHeight: '300px', maxHeight: '400px' }}
                   placeholder="Escribe tus notas aquí. Puedes usar Markdown:&#10;&#10;# Encabezado 1&#10;## Encabezado 2&#10;**Negrita**&#10;*Cursiva*&#10;- Lista de elementos&#10;[Enlace](http://ejemplo.com)"
                 />
               </div>
               
-              <div className="border rounded-lg overflow-hidden">
-                <div className="bg-gray-50 p-3 border-b">
+              <div className="border border-black border-opacity-10 overflow-hidden">
+                <div className="p-3 border-b border-black border-opacity-10">
                   <div className="flex items-center justify-between">
-                    <h3 className="flex items-center gap-2 font-semibold text-gray-800">
+                    <h3 className="flex items-center gap-2 font-light text-black">
                       <Zap size={18} /> Asistente AI
                     </h3>
                     <button 
                       onClick={handleAiResearch} 
-                      className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm flex items-center gap-2 disabled:opacity-50" 
+                      className="px-3 py-1 bg-black text-white text-sm flex items-center gap-2 disabled:opacity-50 font-light hover:bg-opacity-80 transition-colors" 
                       disabled={isResearching}
                     >
                       {isResearching ? (
@@ -232,7 +290,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                   </div>
                 </div>
                 {aiResearchResult && (
-                  <div className="p-3 bg-blue-50 text-sm leading-relaxed">
+                  <div className="p-3 bg-black bg-opacity-8 text-sm leading-relaxed font-light text-black">
                     <div dangerouslySetInnerHTML={{ __html: aiResearchResult.replace(/\n/g, '<br/>') }} />
                   </div>
                 )}
@@ -245,4 +303,102 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   );
 };
 
-export default TaskDetailsModal;
+// Demo component with sample data
+const App = () => {
+  const [selectedTask, setSelectedTask] = useState<Task | null>({
+    id: 1,
+    title: "Encuentro Entre Especies",
+    chapter: 2,
+    startWeek: 1,
+    priority: 'high'
+  });
+  const [notesText, setNotesText] = useState("# Notas del encuentro\n\n**Observaciones importantes:**\n- Primer contacto establecido\n- Protocolo de comunicación iniciado\n\n*Requiere seguimiento próxima semana*");
+  const [calendarAlert, setCalendarAlert] = useState(false);
+  const [isResearching, setIsResearching] = useState(false);
+  const [aiResearchResult, setAiResearchResult] = useState<string | null>("Información relevante sobre el encuentro entre especies encontrada en base de datos...");
+
+  const saveNotes = () => {
+    console.log("Notas guardadas:", notesText);
+  };
+
+  const changePriority = (taskId: number) => {
+    if (selectedTask) {
+      const priorities: ('high' | 'medium' | 'low')[] = ['low', 'medium', 'high'];
+      const currentIndex = priorities.indexOf(selectedTask.priority);
+      const newPriority = priorities[(currentIndex + 1) % 3];
+      setSelectedTask({...selectedTask, priority: newPriority});
+    }
+  };
+
+  const deleteTask = (taskId: number) => {
+    console.log("Tarea eliminada:", taskId);
+    setSelectedTask(null);
+  };
+
+  const getWeekDate = (week: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + (week * 7));
+    return date.toLocaleDateString('es-ES');
+  };
+
+  const handleAiResearch = async () => {
+    setIsResearching(true);
+    setTimeout(() => {
+      setAiResearchResult("Investigación completada: Se han encontrado 5 referencias relacionadas con el encuentro entre especies. Recomendaciones adicionales disponibles.");
+      setIsResearching(false);
+    }, 2000);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-8">
+      {/* Background content to show transparency effect */}
+      <div className="text-white space-y-6">
+        <h1 className="text-4xl font-bold">Task Management System</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-blue-500 bg-opacity-20 p-6 rounded-lg">
+            <h2 className="text-xl font-semibold mb-3">Próximas Tareas</h2>
+            <ul className="space-y-2">
+              <li>• Revisión de capítulo 3</li>
+              <li>• Encuentro con el equipo</li>
+              <li>• Análisis de datos</li>
+            </ul>
+          </div>
+          <div className="bg-green-500 bg-opacity-20 p-6 rounded-lg">
+            <h2 className="text-xl font-semibold mb-3">Completadas</h2>
+            <ul className="space-y-2">
+              <li>• Investigación inicial</li>
+              <li>• Documentación básica</li>
+              <li>• Configuración del proyecto</li>
+            </ul>
+          </div>
+          <div className="bg-purple-500 bg-opacity-20 p-6 rounded-lg">
+            <h2 className="text-xl font-semibold mb-3">En Progreso</h2>
+            <ul className="space-y-2">
+              <li>• Desarrollo del prototipo</li>
+              <li>• Revisión de literatura</li>
+              <li>• Coordinación con stakeholders</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <TaskDetailsModal
+        selectedTask={selectedTask}
+        setSelectedTask={setSelectedTask}
+        notesText={notesText}
+        setNotesText={setNotesText}
+        calendarAlert={calendarAlert}
+        setCalendarAlert={setCalendarAlert}
+        saveNotes={saveNotes}
+        changePriority={changePriority}
+        deleteTask={deleteTask}
+        getWeekDate={getWeekDate}
+        handleAiResearch={handleAiResearch}
+        isResearching={isResearching}
+        aiResearchResult={aiResearchResult}
+      />
+    </div>
+  );
+};
+
+export default App;
