@@ -96,20 +96,21 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             
             {/* Left column - Task info (1/4 width) */}
             <div className="lg:col-span-1 space-y-6">
+              {/* Task info in one line */}
               <div className="bg-gray-50 rounded-lg p-4">
-                <div className="grid grid-cols-1 gap-4 mb-4">
+                <div className="grid grid-cols-4 gap-2 mb-4">
                   <div className="text-center">
                     <div className="text-xs text-gray-500 mb-1">Capítulo</div>
-                    <div className="text-lg font-semibold text-blue-600">{selectedTask.chapter}</div>
+                    <div className="text-sm font-semibold text-blue-600">{selectedTask.chapter}</div>
                   </div>
                   <div className="text-center">
                     <div className="text-xs text-gray-500 mb-1">Semana</div>
-                    <div className="text-lg font-semibold text-green-600">{selectedTask.startWeek}</div>
+                    <div className="text-sm font-semibold text-green-600">{selectedTask.startWeek}</div>
                   </div>
                   <div className="text-center">
                     <div className="text-xs text-gray-500 mb-1">Prioridad</div>
                     <div 
-                      className={`text-lg font-semibold cursor-pointer px-3 py-1 rounded-full text-xs ${
+                      className={`text-sm font-semibold cursor-pointer px-2 py-1 rounded-full text-xs ${
                         selectedTask.priority === 'high' 
                           ? 'bg-red-100 text-red-700' 
                           : selectedTask.priority === 'medium' 
@@ -121,33 +122,37 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                       {selectedTask.priority.charAt(0).toUpperCase() + selectedTask.priority.slice(1)}
                     </div>
                   </div>
-                </div>
-                <div className="text-sm text-gray-600 text-center">
-                  <strong>Fecha:</strong> {getWeekDate(selectedTask.startWeek)}
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Fecha</div>
+                    <div className="text-sm font-semibold text-gray-700">{getWeekDate(selectedTask.startWeek)}</div>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <button 
-                  onClick={saveNotes} 
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-                >
-                  <Save size={16} />
-                  Guardar
-                </button>
-                <button 
-                  onClick={() => changePriority(selectedTask.id)} 
-                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  Cambiar Prioridad
-                </button>
-                <button 
-                  onClick={() => deleteTask(selectedTask.id)} 
-                  className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-                >
-                  <Trash2 size={16} />
-                  Eliminar
-                </button>
+              {/* Action buttons in one line */}
+              <div className="grid grid-cols-1 gap-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <button 
+                    onClick={saveNotes} 
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-2 rounded-lg flex items-center justify-center gap-1 transition-colors text-sm"
+                  >
+                    <Save size={14} />
+                    Guardar
+                  </button>
+                  <button 
+                    onClick={() => changePriority(selectedTask.id)} 
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-2 rounded-lg transition-colors text-sm"
+                  >
+                    Cambiar P.
+                  </button>
+                  <button 
+                    onClick={() => deleteTask(selectedTask.id)} 
+                    className="bg-red-500 hover:bg-red-600 text-white px-2 py-2 rounded-lg flex items-center justify-center gap-1 transition-colors text-sm"
+                  >
+                    <Trash2 size={14} />
+                    Eliminar
+                  </button>
+                </div>
               </div>
 
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
