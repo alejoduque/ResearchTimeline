@@ -57,121 +57,138 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   };
 
   return (
-    <div className="floating-modal-overlay" onClick={() => setSelectedTask(null)}>
-      <div className="floating-modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="floating-modal-header">
-          <h3>{selectedTask.title}</h3>
-          <button onClick={() => setSelectedTask(null)} className="floating-modal-close">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedTask(null)}>
+      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+          <h3 className="text-xl font-bold text-gray-800">{selectedTask.title}</h3>
+          <button 
+            onClick={() => setSelectedTask(null)} 
+            className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+          >
             <X size={20} />
           </button>
         </div>
 
-        <div className="floating-modal-body">
-          <div className="modal-main-content">
-            <div className="modal-columns">
-              <div className="modal-left-column">
-                <div className="task-info-compact">
-                  <div className="task-info-grid">
-                    <div className="task-info-item">
-                      <div className="task-info-label">Capítulo</div>
-                      <div className="task-info-value task-info-chapter">{selectedTask.chapter}</div>
-                    </div>
-                    <div className="task-info-item">
-                      <div className="task-info-label">Semana</div>
-                      <div className="task-info-value task-info-week">{selectedTask.startWeek}</div>
-                    </div>
-                    <div className="task-info-item">
-                      <div className="task-info-label">Prioridad</div>
-                      <div 
-                        className="task-info-value task-info-priority"
-                        onClick={() => changePriority(selectedTask.id)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {selectedTask.priority.charAt(0).toUpperCase() + selectedTask.priority.slice(1)}
-                      </div>
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Capítulo</div>
+                    <div className="text-lg font-semibold text-blue-600">{selectedTask.chapter}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Semana</div>
+                    <div className="text-lg font-semibold text-green-600">{selectedTask.startWeek}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Prioridad</div>
+                    <div 
+                      className={`text-lg font-semibold cursor-pointer px-3 py-1 rounded-full text-xs ${
+                        selectedTask.priority === 'high' 
+                          ? 'bg-red-100 text-red-700' 
+                          : selectedTask.priority === 'medium' 
+                          ? 'bg-yellow-100 text-yellow-700' 
+                          : 'bg-green-100 text-green-700'
+                      }`}
+                      onClick={() => changePriority(selectedTask.id)}
+                    >
+                      {selectedTask.priority.charAt(0).toUpperCase() + selectedTask.priority.slice(1)}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-600 mt-2">
-                    <strong>Fecha:</strong> {getWeekDate(selectedTask.startWeek)}
-                  </div>
                 </div>
-
-                <div className="task-actions-compact">
-                  <button 
-                    onClick={saveNotes} 
-                    className="compact-action-button action-button save"
-                  >
-                    <Save size={16} />
-                    Guardar
-                  </button>
-                  <button 
-                    onClick={() => changePriority(selectedTask.id)} 
-                    className="compact-action-button action-button priority"
-                  >
-                    Cambiar Prioridad
-                  </button>
-                  <button 
-                    onClick={() => deleteTask(selectedTask.id)} 
-                    className="compact-action-button action-button delete"
-                  >
-                    <Trash2 size={16} />
-                    Eliminar
-                  </button>
-                </div>
-
-                <div className="calendar-alert-section">
-                  <input
-                    type="checkbox"
-                    checked={calendarAlert}
-                    onChange={(e) => setCalendarAlert(e.target.checked)}
-                    className="calendar-checkbox"
-                  />
-                  <label className="calendar-label">
-                    <BellOff size={16} />
-                    Alerta de Calendario
-                  </label>
+                <div className="text-sm text-gray-600">
+                  <strong>Fecha:</strong> {getWeekDate(selectedTask.startWeek)}
                 </div>
               </div>
 
-              <div className="modal-right-column">
-                <div className="markdown-section">
-                  <div className="markdown-header">
-                    <h3 className="markdown-label">Notas y Observaciones</h3>
-                    <div className="markdown-toolbar">
-                      <button className="toolbar-button bold" onClick={() => handleMarkdownAction('bold')}>
-                        <Bold size={16} /> Bold
+              <div className="space-y-3">
+                <button 
+                  onClick={saveNotes} 
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Save size={16} />
+                  Guardar
+                </button>
+                <button 
+                  onClick={() => changePriority(selectedTask.id)} 
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  Cambiar Prioridad
+                </button>
+                <button 
+                  onClick={() => deleteTask(selectedTask.id)} 
+                  className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Trash2 size={16} />
+                  Eliminar
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <input
+                  type="checkbox"
+                  checked={calendarAlert}
+                  onChange={(e) => setCalendarAlert(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                  <BellOff size={16} />
+                  Alerta de Calendario
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="border rounded-lg overflow-hidden">
+                <div className="bg-gray-50 p-3 border-b">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-800">Notas y Observaciones</h3>
+                    <div className="flex gap-2">
+                      <button 
+                        className="px-2 py-1 bg-white border rounded text-xs hover:bg-gray-50 flex items-center gap-1" 
+                        onClick={() => handleMarkdownAction('bold')}
+                      >
+                        <Bold size={12} /> Bold
                       </button>
-                      <button className="toolbar-button italic" onClick={() => handleMarkdownAction('italic')}>
-                        <Italic size={16} /> Italic
+                      <button 
+                        className="px-2 py-1 bg-white border rounded text-xs hover:bg-gray-50 flex items-center gap-1" 
+                        onClick={() => handleMarkdownAction('italic')}
+                      >
+                        <Italic size={12} /> Italic
                       </button>
-                      <button className="toolbar-button link" onClick={() => handleMarkdownAction('link')}>
-                        <Link size={16} /> Link
+                      <button 
+                        className="px-2 py-1 bg-white border rounded text-xs hover:bg-gray-50 flex items-center gap-1" 
+                        onClick={() => handleMarkdownAction('link')}
+                      >
+                        <Link size={12} /> Link
                       </button>
                     </div>
                   </div>
-                  <div className="markdown-editor-container">
-                    <textarea
-                      value={notesText}
-                      onChange={(e) => setNotesText(e.target.value)}
-                      className="markdown-textarea"
-                      placeholder="Escribe tus notas aquí. Puedes usar Markdown:&#10;&#10;# Encabezado 1&#10;## Encabezado 2&#10;**Negrita**&#10;*Cursiva*&#10;- Lista de elementos&#10;[Enlace](http://ejemplo.com)"
-                    />
-                  </div>
                 </div>
-                
-                <div className="ai-research-section">
-                  <div className="ai-research-header">
-                    <h3 className="ai-research-title">
+                <textarea
+                  value={notesText}
+                  onChange={(e) => setNotesText(e.target.value)}
+                  className="w-full h-64 p-3 border-none outline-none resize-none"
+                  placeholder="Escribe tus notas aquí. Puedes usar Markdown:&#10;&#10;# Encabezado 1&#10;## Encabezado 2&#10;**Negrita**&#10;*Cursiva*&#10;- Lista de elementos&#10;[Enlace](http://ejemplo.com)"
+                />
+              </div>
+              
+              <div className="border rounded-lg overflow-hidden">
+                <div className="bg-gray-50 p-3 border-b">
+                  <div className="flex items-center justify-between">
+                    <h3 className="flex items-center gap-2 font-semibold text-gray-800">
                       <Zap size={18} /> Asistente AI
                     </h3>
                     <button 
                       onClick={handleAiResearch} 
-                      className="ai-research-button" 
+                      className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm flex items-center gap-2 disabled:opacity-50" 
                       disabled={isResearching}
                     >
                       {isResearching ? (
                         <>
-                          <div className="spinning-loader">⟳</div>
+                          <div className="animate-spin">⟳</div>
                           Investigando...
                         </>
                       ) : (
@@ -182,20 +199,16 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                       )}
                     </button>
                   </div>
-                  {aiResearchResult && (
-                    <div className="ai-research-result">
-                      <div style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>
-                        {aiResearchResult}
-                      </div>
-                    </div>
-                  )}
                 </div>
+                {aiResearchResult && (
+                  <div className="p-3 bg-blue-50 text-sm leading-relaxed">
+                    <div dangerouslySetInnerHTML={{ __html: aiResearchResult.replace(/\n/g, '<br/>') }} />
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
-        
-        <div className="modal-resize-handle"></div>
       </div>
     </div>
   );
