@@ -1,7 +1,27 @@
 import React from 'react';
 import TaskNode from './TaskNode';
+import type { Task, Connection as ConnectionType } from './types';
 
-const TimelineCanvas = ({
+interface TimelineCanvasProps {
+  tasks: Task[];
+  connections: ConnectionType[];
+  connectingFrom: Task | null;
+  hoveredTask: Task | null;
+  draggedTask: Task | null;
+  selectedConnection: ConnectionType | null;
+  mousePos: { x: number; y: number };
+  canvasRef: React.RefObject<SVGSVGElement | null>;
+  handleMouseMove: (e: React.MouseEvent) => void;
+  handleMouseUp: (e: React.MouseEvent) => void;
+  handleCanvasClick: (e: React.MouseEvent) => void;
+  handleConnectionClick: (connection: ConnectionType, e: React.MouseEvent) => void;
+  handleMouseDown: (e: React.MouseEvent, task: Task) => void;
+  getTaskSize: (task: Task, isHovered?: boolean, isDragged?: boolean) => number;
+  blendColors: (color1: string, color2: string) => string;
+  filteredTasks: Task[];
+}
+
+const TimelineCanvas: React.FC<TimelineCanvasProps> = ({
   tasks,
   connections,
   connectingFrom,
@@ -43,16 +63,16 @@ const TimelineCanvas = ({
         <rect width="100%" height="100%" fill="url(#grid)" opacity="0.5" />
 
         {/* Connections */}
-        {connections.map(connection => {
-          const fromTask = tasks.find(t => t.id === connection.from);
-          const toTask = tasks.find(t => t.id === connection.to);
+        {connections.map((connection: ConnectionType) => {
+          const fromTask = tasks.find((t: Task) => t.id === connection.from);
+          const toTask = tasks.find((t: Task) => t.id === connection.to);
           if (!fromTask || !toTask) return null;
           
           const dx = toTask.x - fromTask.x;
           const dy = toTask.y - fromTask.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          const fromRadius = getTaskSize(fromTask.priority) / 2;
-          const toRadius = getTaskSize(toTask.priority) / 2;
+          const fromRadius = getTaskSize(fromTask) / 2;
+          const toRadius = getTaskSize(toTask) / 2;
           const fromX = fromTask.x + (dx / distance) * fromRadius;
           const fromY = fromTask.y + (dy / distance) * fromRadius;
           const toX = toTask.x - (dx / distance) * toRadius;
@@ -87,7 +107,7 @@ const TimelineCanvas = ({
         )}
 
         {/* Tasks */}
-        {filteredTasks.map(task => (
+        {filteredTasks.map((task: Task) => (
           <TaskNode
             key={task.id}
             task={task}

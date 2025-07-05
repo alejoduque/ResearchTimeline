@@ -3,9 +3,10 @@ import Controls from './Controls';
 import Legend from './Legend';
 import TimelineCanvas from './TimelineCanvas';
 import TaskDetailsModal from './TaskDetailsModal';
+import type { Task, Connection, Chapters } from './types';
 
-const ScatteredThesisTimeline = () => {
-  const [tasks, setTasks] = useState([
+const ScatteredThesisTimeline: React.FC = () => {
+  const [tasks, setTasks] = useState<Task[]>([
     // Chapter 1
     { id: 1, title: "Bioacústica - Más allá del antropocentrismo sonoro", chapter: 1, startWeek: 1, duration: 1, color: "#3B82F6", priority: "high", x: 150, y: 120, notes: "", calendarAlert: false },
     { id: 2, title: "Encuentro Entre Especies y Espectros [e4]", chapter: 1, startWeek: 2, duration: 1, color: "#3B82F6", priority: "high", x: 320, y: 80, notes: "", calendarAlert: false },
@@ -42,21 +43,22 @@ const ScatteredThesisTimeline = () => {
     { id: 27, title: "Revisión final y preparación de presentación", chapter: 4, startWeek: 27, duration: 1, color: "#EF4444", priority: "high", x: 750, y: 800, notes: "", calendarAlert: false }
   ]);
 
-  const [connections, setConnections] = useState([]);
-  const [draggedTask, setDraggedTask] = useState(null);
-  const [hoveredTask, setHoveredTask] = useState(null);
-  const [selectedConnection, setSelectedConnection] = useState(null);
-  const [selectedTask, setSelectedTask] = useState(null);
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+  const [hoveredTask, setHoveredTask] = useState<Task | null>(null);
+  const [selectedConnection, setSelectedConnection] = useState<Connection | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('all');
   const [notesText, setNotesText] = useState('');
   const [calendarAlert, setCalendarAlert] = useState(false);
-  const [connectingFrom, setConnectingFrom] = useState(null);
+  const [connectingFrom, setConnectingFrom] = useState<Task | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [clickStartPos, setClickStartPos] = useState(null);
+  const [clickStartPos, setClickStartPos] = useState<{ x: number; y: number } | null>(null);
   const [isResearching, setIsResearching] = useState(false);
-  const [aiResearchResult, setAiResearchResult] = useState(null);
-  const canvasRef = useRef(null);
+  const [aiResearchResult, setAiResearchResult] = useState<string | null>(null);
+  const [baseTaskSize, setBaseTaskSize] = useState(80);
+  const canvasRef = useRef<SVGSVGElement>(null);
   const isDragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
 
@@ -69,30 +71,34 @@ const ScatteredThesisTimeline = () => {
     }
   }, [selectedTask]);
 
-  const chapters = {
+  const chapters: Chapters = {
     1: { name: "Encuentro Entre Especies y Espectros", color: "#3B82F6" },
     2: { name: "Poéticas de la relación", color: "#10B981" },
     3: { name: "Mediaciones e interfaces", color: "#F59E0B" },
     4: { name: "Revisión y Consolidación", color: "#EF4444" }
   };
 
-  const getTaskSize = useCallback((priority, isHovered = false, isDragged = false) => {
-    let baseSize;
-    switch (priority) {
-      case 'high': baseSize = 80; break;
-      case 'medium': baseSize = 65; break;
-      case 'low': baseSize = 50; break;
-      default: baseSize = 65;
+  const getTaskSize = useCallback((task: Task, isHovered = false, isDragged = false) => {
+    if (task.size) {
+      return task.size;
     }
-    if (isHovered && isDragged) return baseSize * 1.5;
-    return baseSize;
-  }, []);
+    let sizeMultiplier;
+    switch (task.priority) {
+      case 'high': sizeMultiplier = 1.2; break;
+      case 'medium': sizeMultiplier = 1.0; break;
+      case 'low': sizeMultiplier = 0.8; break;
+      default: sizeMultiplier = 1.0;
+    }
+    const size = baseTaskSize * sizeMultiplier;
+    if (isHovered && isDragged) return size * 1.5;
+    return size;
+  }, [baseTaskSize]);
 
-  const getDistance = useCallback((x1, y1, x2, y2) => {
+  const getDistance = useCallback((x1: number, y1: number, x2: number, y2: number) => {
     return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
   }, []);
 
-  const blendColors = useCallback((color1, color2) => {
+  const blendColors = useCallback((color1: string, color2: string) => {
     const hex1 = color1.replace('#', '');
     const hex2 = color2.replace('#', '');
     const r1 = parseInt(hex1.substr(0, 2), 16);
@@ -107,25 +113,26 @@ const ScatteredThesisTimeline = () => {
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   }, []);
 
-  const getTaskUnderMouse = useCallback((mouseX, mouseY) => {
+  const getTaskUnderMouse = useCallback((mouseX: number, mouseY: number) => {
     return tasks.find(task => {
-      const size = getTaskSize(task.priority);
+      const size = getTaskSize(task);
       const distance = getDistance(mouseX, mouseY, task.x, task.y);
       return distance <= size / 2;
     });
   }, [tasks, getTaskSize, getDistance]);
 
-  const getWeekDate = useCallback((weekNumber) => {
+  const getWeekDate = useCallback((weekNumber: number) => {
     const startDate = new Date('2025-06-23');
     const targetDate = new Date(startDate);
     targetDate.setDate(startDate.getDate() + (weekNumber - 1) * 7);
     return targetDate.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
   }, []);
 
-  const handleMouseDown = useCallback((e, task) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent, task: Task) => {
     e.preventDefault();
     e.stopPropagation();
     
+    if (!canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
@@ -141,7 +148,7 @@ const ScatteredThesisTimeline = () => {
           );
           
           if (!existingConnection) {
-            const newConnection = {
+            const newConnection: Connection = {
               id: Date.now(),
               from: connectingFrom.id,
               to: task.id
@@ -165,7 +172,8 @@ const ScatteredThesisTimeline = () => {
     isDragging.current = true;
   }, [connections, connectingFrom]);
 
-  const handleMouseMove = useCallback((e) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
@@ -173,7 +181,7 @@ const ScatteredThesisTimeline = () => {
     
     if (!isDragging.current || !draggedTask) {
       const taskUnder = getTaskUnderMouse(mouseX, mouseY);
-      setHoveredTask(taskUnder);
+      setHoveredTask(taskUnder || null);
       return;
     }
     
@@ -190,8 +198,9 @@ const ScatteredThesisTimeline = () => {
     ));
   }, [draggedTask, getTaskUnderMouse, tasks]);
 
-  const handleMouseUp = useCallback((e) => {
+  const handleMouseUp = useCallback((e: React.MouseEvent) => {
     if (clickStartPos && draggedTask) {
+      if (!canvasRef.current) return;
       const rect = canvasRef.current.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
@@ -205,7 +214,7 @@ const ScatteredThesisTimeline = () => {
         const blendedColor = blendColors(draggedTask.color, hoveredTask.color);
         setTasks(prev => prev.map(task => 
           task.id === hoveredTask.id 
-            ? { ...task, color: blendedColor }
+            ? { ...task, color: blendedColor } 
             : task
         ));
       }
@@ -217,7 +226,19 @@ const ScatteredThesisTimeline = () => {
     setClickStartPos(null);
   }, [clickStartPos, draggedTask, getDistance, hoveredTask, blendColors]);
 
-  const handleConnectionClick = useCallback((connection, e) => {
+  const handleTaskSizeChange = useCallback((newSize: number) => {
+    if (selectedTask) {
+      setTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.id === selectedTask.id ? { ...task, size: newSize } : task
+        )
+      );
+    } else {
+      setBaseTaskSize(newSize);
+    }
+  }, [selectedTask, setBaseTaskSize]);
+
+  const handleConnectionClick = useCallback((connection: Connection, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedConnection(connection);
   }, []);
@@ -229,7 +250,8 @@ const ScatteredThesisTimeline = () => {
     }
   }, [connections, selectedConnection]);
 
-  const handleCanvasClick = useCallback((e) => {
+  const handleCanvasClick = useCallback((e: React.MouseEvent) => {
+    if (!canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
@@ -243,6 +265,7 @@ const ScatteredThesisTimeline = () => {
   }, [getTaskUnderMouse]);
 
   const saveNotes = useCallback(() => {
+    if (!selectedTask) return;
     setTasks(tasks => tasks.map(task => 
       task.id === selectedTask.id 
         ? { ...task, notes: notesText, calendarAlert: calendarAlert }
@@ -254,7 +277,7 @@ const ScatteredThesisTimeline = () => {
 
   const addNewTask = useCallback(() => {
     if (newTaskTitle.trim()) {
-      const newTask = {
+      const newTask: Task = {
         id: Math.max(...tasks.map(t => t.id)) + 1,
         title: newTaskTitle,
         chapter: 1,
@@ -272,7 +295,7 @@ const ScatteredThesisTimeline = () => {
     }
   }, [newTaskTitle, tasks]);
 
-  const deleteTask = useCallback((taskId) => {
+  const deleteTask = useCallback((taskId: number) => {
     setTasks(prev => prev.filter(task => task.id !== taskId));
     setConnections(prev => prev.filter(conn => conn.from !== taskId && conn.to !== taskId));
     if (selectedTask && selectedTask.id === taskId) {
@@ -280,8 +303,8 @@ const ScatteredThesisTimeline = () => {
     }
   }, [selectedTask]);
 
-  const changePriority = useCallback((taskId) => {
-    const priorities = ['low', 'medium', 'high'];
+  const changePriority = useCallback((taskId: number) => {
+    const priorities: Array<'low' | 'medium' | 'high'> = ['low', 'medium', 'high'];
     setTasks(prev => prev.map(task => {
       if (task.id === taskId) {
         const currentIndex = priorities.indexOf(task.priority);
@@ -338,7 +361,11 @@ const ScatteredThesisTimeline = () => {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `Basado en las siguientes notas de una tesis, por favor, proporciona un breve resumen de investigación, sugiere 3 autores clave relacionados y 2 posibles líneas de exploración futura:\n\n---\n\n${notesText}`
+              text: `Basado en las siguientes notas de una tesis, por favor, proporciona un breve resumen de investigación, sugiere 3 autores clave relacionados y 2 posibles líneas de exploración futura:
+
+---
+
+${notesText}`
             }]
           }]
         })
@@ -391,12 +418,14 @@ const ScatteredThesisTimeline = () => {
         newTaskTitle={newTaskTitle}
         setNewTaskTitle={setNewTaskTitle}
         addNewTask={addNewTask}
-        connectingFrom={connectingFrom}
-        setConnectingFrom={setConnectingFrom}
-        selectedConnection={selectedConnection}
-        deleteConnection={deleteConnection}
-        randomizePositions={randomizePositions}
         exportToCSV={exportToCSV}
+        baseTaskSize={selectedTask?.size || baseTaskSize}
+        setBaseTaskSize={handleTaskSizeChange}
+        randomizePositions={randomizePositions}
+        deleteConnection={deleteConnection}
+        selectedConnection={selectedConnection}
+        setConnectingFrom={setConnectingFrom}
+        connectingFrom={connectingFrom}
       />
 
       <Legend chapters={chapters} />

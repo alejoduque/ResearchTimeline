@@ -1,82 +1,100 @@
 import React from 'react';
-import { Plus, X, Trash2, RotateCcw, Download } from 'lucide-react';
+import { Plus, Download, Shuffle, Trash2 } from 'lucide-react';
 import ActionButton from './ActionButton';
+import type { Chapters, Connection, Task } from './types';
 
-const Controls = ({
+interface ControlsProps {
+  chapters: Chapters;
+  selectedChapter: string;
+  setSelectedChapter: (chapter: string) => void;
+  newTaskTitle: string;
+  setNewTaskTitle: (title: string) => void;
+  addNewTask: () => void;
+  exportToCSV: () => void;
+  baseTaskSize: number;
+  setBaseTaskSize: (size: number) => void;
+  randomizePositions: () => void;
+  deleteConnection: () => void;
+  selectedConnection: Connection | null;
+  setConnectingFrom: (task: Task | null) => void;
+  connectingFrom: Task | null;
+}
+
+const Controls: React.FC<ControlsProps> = ({
   chapters,
   selectedChapter,
   setSelectedChapter,
   newTaskTitle,
   setNewTaskTitle,
   addNewTask,
-  connectingFrom,
-  setConnectingFrom,
-  selectedConnection,
-  deleteConnection,
+  exportToCSV,
+  baseTaskSize,
+  setBaseTaskSize,
   randomizePositions,
-  exportToCSV
+  deleteConnection,
+  selectedConnection,
+  setConnectingFrom,
+  connectingFrom
 }) => {
   return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-4 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div className="flex items-center space-x-2">
-          <label htmlFor="chapter-select" className="text-sm font-medium text-gray-600">Capítulo:</label>
-          <select
-            id="chapter-select"
-            value={selectedChapter}
-            onChange={(e) => setSelectedChapter(e.target.value)}
-            className="border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="all">Todos</option>
-            {Object.entries(chapters).map(([num, { name }]) => (
-              <option key={num} value={num}>{`Cap. ${num}: ${name}`}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-center space-x-2">
-          <input
-            type="text"
-            placeholder="Nueva tarea..."
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && addNewTask()}
-            className="border-gray-300 rounded-md px-3 py-1.5 text-sm w-48 focus:ring-blue-500 focus:border-blue-500"
-          />
-          <button onClick={addNewTask} className="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors">
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
+    <div className="p-4 bg-white rounded-lg shadow-md mb-6 flex flex-wrap items-center gap-4">
+      <div className="flex items-center gap-2">
+        <select
+          value={selectedChapter}
+          onChange={(e) => setSelectedChapter(e.target.value)}
+          className="bg-gray-100 border-gray-300 rounded-md p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="all">Todos los Capítulos</option>
+          {Object.entries(chapters).map(([num, chapter]) => (
+            <option key={num} value={num}>Capítulo {num}: {chapter.name}</option>
+          ))}
+        </select>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+
+      <div className="flex-grow flex items-center gap-2">
+        <input
+          type="text"
+          value={newTaskTitle}
+          onChange={(e) => setNewTaskTitle(e.target.value)}
+          placeholder="Nueva tarea..."
+          className="flex-grow p-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-500"
+        />
+        <ActionButton onClick={addNewTask} icon={Plus} className="bg-blue-500 hover:bg-blue-600">
+          Añadir
+        </ActionButton>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <ActionButton onClick={exportToCSV} icon={Download} className="bg-green-500 hover:bg-green-600">
+          Exportar CSV
+        </ActionButton>
+        <ActionButton onClick={randomizePositions} icon={Shuffle} className="bg-purple-500 hover:bg-purple-600">
+          Aleatorizar
+        </ActionButton>
         {connectingFrom && (
-          <div className="flex items-center space-x-2 px-3 py-1.5 bg-purple-100 text-purple-800 rounded-md text-sm">
-            <span>{`Conectando: ${connectingFrom.title.substring(0, 20)}...`}</span>
-            <button onClick={() => setConnectingFrom(null)} className="text-purple-500 hover:text-purple-700">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+          <button onClick={() => setConnectingFrom(null)} className="text-sm text-red-500 hover:text-red-700">
+            Cancelar Conexión
+          </button>
         )}
         {selectedConnection && (
-          <ActionButton
-            onClick={deleteConnection}
-            icon={Trash2}
-            className="bg-red-100 text-red-700 hover:bg-red-200"
-          >
-            Eliminar Conexión
+          <ActionButton onClick={deleteConnection} icon={Trash2} className="bg-red-500 hover:bg-red-600">
+            Borrar Conexión
           </ActionButton>
         )}
-        <ActionButton
-          onClick={randomizePositions}
-          icon={RotateCcw}
-          className="bg-gray-100 text-gray-700 hover:bg-gray-200"
+      </div>
+
+      <div className="flex items-center gap-2">
+        <label htmlFor="taskSize" className="text-sm text-gray-600">Tamaño de Tarea:</label>
+        <input
+          id="taskSize"
+          type="range"
+          min="30"
+          max="100"
+          value={baseTaskSize}
+          onChange={(e) => setBaseTaskSize(Number(e.target.value))}
+          className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
         />
-        <ActionButton
-          onClick={exportToCSV}
-          icon={Download}
-          className="bg-green-600 text-white hover:bg-green-700"
-        >
-          Exportar
-        </ActionButton>
+        <span className="text-sm text-gray-600">{baseTaskSize}px</span>
       </div>
     </div>
   );
