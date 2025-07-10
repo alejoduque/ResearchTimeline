@@ -14,7 +14,9 @@ const Controls = ({
   selectedConnection,
   deleteConnection,
   randomizePositions,
-  exportToCSV
+  exportToCSV,
+  exportToJSON,
+  importFromJSON
 }) => {
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-4 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -69,14 +71,40 @@ const Controls = ({
           onClick={randomizePositions}
           icon={RotateCcw}
           className="bg-gray-100 text-gray-700 hover:bg-gray-200"
-        />
+        >
+          Aleatorizar
+        </ActionButton>
         <ActionButton
           onClick={exportToCSV}
           icon={Download}
           className="bg-green-600 text-white hover:bg-green-700"
         >
-          Exportar
+          CSV
         </ActionButton>
+        <ActionButton
+          onClick={exportToJSON}
+          icon={Download}
+          className="bg-blue-600 text-white hover:bg-blue-700"
+        >
+          JSON
+        </ActionButton>
+        <label className="cursor-pointer" title="Importar JSON">
+          <input
+            type="file"
+            accept=".json"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                importFromJSON(file);
+                e.target.value = ''; // Reset input
+              }
+            }}
+            className="hidden"
+          />
+          <div className="bg-purple-600 text-white p-2 rounded-md hover:bg-purple-700 transition-colors cursor-pointer">
+            <Download className="w-4 h-4 rotate-180" />
+          </div>
+        </label>
       </div>
     </div>
   );

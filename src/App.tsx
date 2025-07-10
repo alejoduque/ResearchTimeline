@@ -403,6 +403,47 @@ const ScatteredThesisTimeline = () => {
     a.click();
   }, [tasks, getWeekDate]);
 
+  const exportToJSON = useCallback(() => {
+    const data = {
+      tasks: tasks,
+      connections: connections,
+      exportDate: new Date().toISOString(),
+      version: '1.0'
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `research-timeline-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+  }, [tasks, connections]);
+
+  const importFromJSON = useCallback((file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        
+        if (data.tasks && Array.isArray(data.tasks)) {
+          setTasks(data.tasks);
+          localStorage.setItem('thesis-timeline-tasks', JSON.stringify(data.tasks));
+        }
+        
+        if (data.connections && Array.isArray(data.connections)) {
+          setConnections(data.connections);
+          localStorage.setItem('thesis-timeline-connections', JSON.stringify(data.connections));
+        }
+        
+        alert('Datos importados exitosamente!');
+      } catch (error) {
+        console.error('Error importing data:', error);
+        alert('Error al importar los datos. Verifica que el archivo sea válido.');
+      }
+    };
+    reader.readAsText(file);
+  }, []);
+
   const handleAiResearch = useCallback(async () => {
     if (!notesText.trim()) {
       setAiResearchResult("Por favor, escribe algunas notas antes de investigar.");
@@ -473,20 +514,22 @@ const ScatteredThesisTimeline = () => {
         </p>
       </div>
 
-      <Controls
-        chapters={chapters}
-        selectedChapter={selectedChapter}
-        setSelectedChapter={setSelectedChapter}
-        newTaskTitle={newTaskTitle}
-        setNewTaskTitle={setNewTaskTitle}
-        addNewTask={addNewTask}
-        connectingFrom={connectingFrom}
-        setConnectingFrom={setConnectingFrom}
-        selectedConnection={selectedConnection}
-        deleteConnection={deleteConnection}
-        randomizePositions={randomizePositions}
-        exportToCSV={exportToCSV}
-      />
+              <Controls
+          chapters={chapters}
+          selectedChapter={selectedChapter}
+          setSelectedChapter={setSelectedChapter}
+          newTaskTitle={newTaskTitle}
+          setNewTaskTitle={setNewTaskTitle}
+          addNewTask={addNewTask}
+          connectingFrom={connectingFrom}
+          setConnectingFrom={setConnectingFrom}
+          selectedConnection={selectedConnection}
+          deleteConnection={deleteConnection}
+          randomizePositions={randomizePositions}
+          exportToCSV={exportToCSV}
+          exportToJSON={exportToJSON}
+          importFromJSON={importFromJSON}
+        />
 
       <Legend chapters={chapters} />
 
