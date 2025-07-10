@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Persistence</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Research Timeline - Persistence Test</h1>
+        
+        <div class="section">
+            <h2>Current localStorage Data</h2>
+            <button onclick="checkStorage()">Check localStorage</button>
+            <button onclick="clearStorage()">Clear All Data</button>
+            <div id="storage-data"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Instructions</h2>
+            <ol>
+                <li>Open your Research Timeline app at <a href="http://localhost:5175/" target="_blank">http://localhost:5175/</a></li>
+                <li>Add some notes to a few tasks</li>
+                <li>Create some connections between tasks (Shift+click)</li>
+                <li>Come back here and click "Check localStorage" to see the saved data</li>
+                <li>Refresh the timeline app to verify persistence</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function checkStorage() {
+            const tasksData = localStorage.getItem('thesis-timeline-tasks');
+            const connectionsData = localStorage.getItem('thesis-timeline-connections');
+            
+            let html = '<h3>Tasks & Notes:</h3>';
+            if (tasksData) {
+                try {
+                    const tasks = JSON.parse(tasksData);
+                    const tasksWithNotes = tasks.filter(task => task.notes && task.notes.trim() !== '');
+                    if (tasksWithNotes.length > 0) {
+                        html += '<p><strong>Tasks with notes:</strong></p>';
+                        tasksWithNotes.forEach(task => {
+                            html += `<div style="margin: 10px 0; padding: 10px; background: #e9ecef; border-radius: 3px;">
+                                <strong>${task.title}</strong> (ID: ${task.id})<br>
+                                <em>Notes:</em> ${task.notes.substring(0, 100)}${task.notes.length > 100 ? '...' : ''}
+                            </div>`;
+                        });
+                    } else {
+                        html += '<p>No tasks with notes found.</p>';
+                    }
+                } catch (e) {
+                    html += '<p style="color: red;">Error parsing tasks data</p>';
+                }
+            } else {
+                html += '<p>No tasks data found in localStorage.</p>';
+            }
+            
+            html += '<h3>Connections:</h3>';
+            if (connectionsData) {
+                try {
+                    const connections = JSON.parse(connectionsData);
+                    if (connections.length > 0) {
+                        html += `<p><strong>${connections.length} connections found:</strong></p>`;
+                        html += '<pre>' + JSON.stringify(connections, null, 2) + '</pre>';
+                    } else {
+                        html += '<p>No connections found.</p>';
+                    }
+                } catch (e) {
+                    html += '<p style="color: red;">Error parsing connections data</p>';
+                }
+            } else {
+                html += '<p>No connections data found in localStorage.</p>';
+            }
+            
+            document.getElementById('storage-data').innerHTML = html;
+        }
+        
+        function clearStorage() {
+            if (confirm('Are you sure you want to clear all localStorage data?')) {
+                localStorage.removeItem('thesis-timeline-tasks');
+                localStorage.removeItem('thesis-timeline-connections');
+                alert('localStorage cleared!');
+                checkStorage();
+            }
+        }
+        
+        // Check storage on page load
+        checkStorage();
+    </script>
+</body>
+</html> 

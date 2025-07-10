@@ -1,0 +1,500 @@
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import Controls from './Controls';
+import Legend from './Legend';
+import TimelineCanvas from './TimelineCanvas';
+import TaskDetailsModal from './TaskDetailsModal';
+import type { Task, Connection, Chapters } from './types';
+
+// Version identifier for localStorage data format
+const STORAGE_VERSION = '1.0';
+
+// Interface for localStorage data structure
+interface StorageData {
+  version: string;
+  tasks: Task[];
+  lastUpdated: string;
+}
+
+// Helper function to validate task structure
+const isValidTask = (task: any): task is Task => {
+  return (
+    typeof task === 'object' &&
+    typeof task.id === 'number' &&
+    typeof task.title === 'string' &&
+    typeof task.chapter === 'number' &&
+    typeof task.startWeek === 'number' &&
+    typeof task.duration === 'number' &&
+    typeof task.color === 'string' &&
+    typeof task.priority === 'string' &&
+    typeof task.x === 'number' &&
+    typeof task.y === 'number' &&
+    (task.notes === undefined || typeof task.notes === 'string') &&
+    (task.calendarAlert === undefined || typeof task.calendarAlert === 'boolean')
+  );
+};
+
+// Helper function to safely save data to localStorage
+const saveToLocalStorage = (data: StorageData): boolean => {
+  try {
+    const serializedData = JSON.stringify(data);
+    localStorage.setItem('thesis-timeline-data', serializedData);
+    return true;
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+    try {
+      localStorage.removeItem('thesis-timeline-data');
+      localStorage.setItem('thesis-timeline-data', JSON.stringify(data));
+      return true;
+    } catch (retryError) {
+      console.error('Failed to save even after cleanup:', retryError);
+      return false;
+    }
+  }
+};
+
+// Helper function to get initial tasks from localStorage or defaults
+const getInitialTasks = (): Task[] => {
+  try {
+    const savedData = localStorage.getItem('thesis-timeline-data');
+    if (savedData) {
+      const parsedData: StorageData = JSON.parse(savedData);
+      
+      if (parsedData.version !== STORAGE_VERSION) {
+        console.warn('Storage version mismatch, using default tasks');
+        throw new Error('Storage version mismatch');
+      }
+
+      if (Array.isArray(parsedData.tasks) && parsedData.tasks.every(isValidTask)) {
+        return parsedData.tasks;
+      }
+      
+      console.warn('Invalid task data in localStorage, using default tasks');
+      throw new Error('Invalid task data structure');
+    }
+  } catch (error) {
+    console.error('Error loading tasks from localStorage:', error);
+    localStorage.removeItem('thesis-timeline-data');
+  }
+  
+  // Return default tasks if loading fails
+  return [
+    // Chapter 1
+    { id: 1, title: "Bioacústica - Más allá del antropocentrismo sonoro", chapter: 1, startWeek: 1, duration: 1, color: "#3B82F6", priority: "high", x: 150, y: 120, notes: "", calendarAlert: false },
+    { id: 2, title: "Encuentro Entre Especies y Espectros [e4]", chapter: 1, startWeek: 2, duration: 1, color: "#3B82F6", priority: "high", x: 320, y: 80, notes: "", calendarAlert: false },
+    { id: 3, title: "Artes de la Transmisión (Full spectrum radio)", chapter: 1, startWeek: 3, duration: 1, color: "#3B82F6", priority: "medium", x: 480, y: 140, notes: "", calendarAlert: false },
+    { id: 4, title: "Inteligencia de máquinas y arte (Google AMI)", chapter: 1, startWeek: 4, duration: 1, color: "#3B82F6", priority: "high", x: 680, y: 100, notes: "", calendarAlert: false },
+    { id: 5, title: "Monitoreo y Sonificación (Wildlabs)", chapter: 1, startWeek: 5, duration: 1, color: "#3B82F6", priority: "medium", x: 820, y: 160, notes: "", calendarAlert: false },
+    
+    // Chapter 2
+    { id: 6, title: "Sub/culturas - Reinventar/reconstruir", chapter: 2, startWeek: 6, duration: 1, color: "#10B981", priority: "high", x: 180, y: 280, notes: "", calendarAlert: false },
+    { id: 7, title: "Tec-sincretismo (EGS)", chapter: 2, startWeek: 7, duration: 1, color: "#10B981", priority: "medium", x: 350, y: 320, notes: "", calendarAlert: false },
+    { id: 8, title: "Espectros sonoros", chapter: 2, startWeek: 8, duration: 1, color: "#10B981", priority: "medium", x: 520, y: 260, notes: "", calendarAlert: false },
+    { id: 9, title: "De IAP a DAO", chapter: 2, startWeek: 9, duration: 1, color: "#10B981", priority: "high", x: 720, y: 300, notes: "", calendarAlert: false },
+    { id: 10, title: "Parlamento de lo vivo - Édouard Glissant", chapter: 2, startWeek: 10, duration: 1, color: "#10B981", priority: "high", x: 890, y: 240, notes: "", calendarAlert: false },
+    { id: 11, title: "Agenciamientos multiespecie", chapter: 2, startWeek: 11, duration: 1, color: "#10B981", priority: "medium", x: 1000, y: 320, notes: "", calendarAlert: false },
+    
+    // Chapter 3
+    { id: 12, title: "Biocracia - Nueva Gobernanza Inter-especies", chapter: 3, startWeek: 12, duration: 1, color: "#F59E0B", priority: "high", x: 120, y: 450, notes: "", calendarAlert: false },
+    { id: 13, title: "Sistemas de información geográfica (SIG)", chapter: 3, startWeek: 13, duration: 1, color: "#F59E0B", priority: "high", x: 300, y: 480, notes: "", calendarAlert: false },
+    { id: 14, title: "El jaguar y el ocelote", chapter: 3, startWeek: 14, duration: 1, color: "#F59E0B", priority: "medium", x: 480, y: 420, notes: "", calendarAlert: false },
+    { id: 15, title: "Redes de comunicación interespecífica", chapter: 3, startWeek: 15, duration: 1, color: "#F59E0B", priority: "medium", x: 650, y: 460, notes: "", calendarAlert: false },
+    { id: 16, title: "Archivos híbridos", chapter: 3, startWeek: 16, duration: 1, color: "#F59E0B", priority: "high", x: 820, y: 400, notes: "", calendarAlert: false },
+    { id: 17, title: "Arte y Sensibilización Ecológica", chapter: 3, startWeek: 17, duration: 1, color: "#F59E0B", priority: "medium", x: 980, y: 480, notes: "", calendarAlert: false },
+    { id: 18, title: "Tokenización de participación ecosistémica", chapter: 3, startWeek: 18, duration: 1, color: "#F59E0B", priority: "high", x: 150, y: 580, notes: "", calendarAlert: false },
+    { id: 19, title: "LiquidIce - Desarrollo y programación", chapter: 3, startWeek: 19, duration: 1, color: "#F59E0B", priority: "high", x: 380, y: 600, notes: "", calendarAlert: false },
+    { id: 20, title: "Sistema PAM como base para DAO", chapter: 3, startWeek: 20, duration: 1, color: "#F59E0B", priority: "high", x: 580, y: 540, notes: "", calendarAlert: false },
+    { id: 21, title: "Espacialización sonora", chapter: 3, startWeek: 21, duration: 1, color: "#F59E0B", priority: "medium", x: 750, y: 580, notes: "", calendarAlert: false },
+    { id: 22, title: "Monitoreo, IA y análisis de redes", chapter: 3, startWeek: 22, duration: 1, color: "#F59E0B", priority: "high", x: 920, y: 620, notes: "", calendarAlert: false },
+    
+    // Review phases
+    { id: 23, title: "Revisión integral Capítulo 1", chapter: 4, startWeek: 23, duration: 1, color: "#EF4444", priority: "high", x: 200, y: 720, notes: "", calendarAlert: false },
+    { id: 24, title: "Revisión integral Capítulo 2", chapter: 4, startWeek: 24, duration: 1, color: "#EF4444", priority: "high", x: 450, y: 750, notes: "", calendarAlert: false },
+    { id: 25, title: "Revisión integral Capítulo 3", chapter: 4, startWeek: 25, duration: 1, color: "#EF4444", priority: "high", x: 700, y: 720, notes: "", calendarAlert: false },
+    { id: 26, title: "Integración y conclusiones generales", chapter: 4, startWeek: 26, duration: 1, color: "#EF4444", priority: "high", x: 500, y: 820, notes: "", calendarAlert: false },
+    { id: 27, title: "Revisión final y preparación de presentación", chapter: 4, startWeek: 27, duration: 1, color: "#EF4444", priority: "high", x: 750, y: 800, notes: "", calendarAlert: false }
+  ];
+};
+
+// Helper function to get initial connections from localStorage or defaults with validation
+const getInitialConnections = (): Connection[] => {
+  try {
+    const savedConnections = localStorage.getItem('thesis-timeline-connections');
+    if (savedConnections) {
+      const connections = JSON.parse(savedConnections);
+      if (Array.isArray(connections) && connections.every(conn => 
+        typeof conn === 'object' &&
+        typeof conn.id === 'number' &&
+        typeof conn.from === 'number' &&
+        typeof conn.to === 'number'
+      )) {
+        return connections;
+      }
+    }
+  } catch (error) {
+    console.error('Error parsing saved connections:', error);
+    localStorage.removeItem('thesis-timeline-connections');
+  }
+  return [];
+};
+
+const ScatteredThesisTimeline: React.FC = () => {
+  const [tasks, setTasks] = useState<Task[]>(getInitialTasks());
+  const [connections, setConnections] = useState<Connection[]>(getInitialConnections());
+  const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+  const [hoveredTask, setHoveredTask] = useState<Task | null>(null);
+  const [selectedConnection, setSelectedConnection] = useState<Connection | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [modalClickPosition, setModalClickPosition] = useState<{ x: number; y: number } | null>(null);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [selectedChapter, setSelectedChapter] = useState('all');
+  const [notesText, setNotesText] = useState('');
+  const [calendarAlert, setCalendarAlert] = useState(false);
+  const [connectingFrom, setConnectingFrom] = useState<Task | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [clickStartPos, setClickStartPos] = useState<{ x: number; y: number } | null>(null);
+  const [isResearching, setIsResearching] = useState(false);
+  const [aiResearchResult, setAiResearchResult] = useState<string | null>(null);
+  const [baseTaskSize, setBaseTaskSize] = useState(80);
+  const [lastSaveStatus, setLastSaveStatus] = useState<boolean>(true);
+  const canvasRef = useRef<SVGSVGElement>(null);
+  const isDragging = useRef(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  // Enhanced localStorage save effect with versioning and backup
+  useEffect(() => {
+    const storageData: StorageData = {
+      version: STORAGE_VERSION,
+      tasks,
+      lastUpdated: new Date('2025-07-07T14:48:03Z').toISOString()
+    };
+    
+    const saveSuccess = saveToLocalStorage(storageData);
+    setLastSaveStatus(saveSuccess);
+    
+    if (!saveSuccess) {
+      try {
+        sessionStorage.setItem('thesis-timeline-backup', JSON.stringify(tasks));
+      } catch (backupError) {
+        console.error('Failed to create backup in sessionStorage:', backupError);
+      }
+    }
+  }, [tasks]);
+
+  // Save connections with validation
+  useEffect(() => {
+    try {
+      localStorage.setItem('thesis-timeline-connections', JSON.stringify(connections));
+    } catch (error) {
+      console.error('Error saving connections:', error);
+    }
+  }, [connections]);
+
+  useEffect(() => {
+    if (selectedTask) {
+      setNotesText(selectedTask.notes || '');
+      setCalendarAlert(selectedTask.calendarAlert || false);
+      setAiResearchResult(null);
+      setIsResearching(false);
+    }
+  }, [selectedTask]);
+
+  const chapters: Chapters = {
+    1: { name: "Encuentro Entre Especies y Espectros", color: "#3B82F6" },
+    2: { name: "Poéticas de la relación", color: "#10B981" },
+    3: { name: "Mediaciones e interfaces", color: "#F59E0B" },
+    4: { name: "Revisión y Consolidación", color: "#EF4444" }
+  };
+
+  const getTaskSize = useCallback((task: Task, isHovered = false, isDragged = false) => {
+    if (task.size) {
+      return task.size;
+    }
+    let sizeMultiplier;
+    switch (task.priority) {
+      case 'high': sizeMultiplier = 1.2; break;
+      case 'medium': sizeMultiplier = 1.0; break;
+      case 'low': sizeMultiplier = 0.8; break;
+      default: sizeMultiplier = 1.0;
+    }
+    const size = baseTaskSize * sizeMultiplier;
+    if (isHovered && isDragged) return size * 1.5;
+    return size;
+  }, [baseTaskSize]);
+
+  // Rest of your original functions remain unchanged
+  const getDistance = useCallback((x1: number, y1: number, x2: number, y2: number) => {
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  }, []);
+
+  const blendColors = useCallback((color1: string, color2: string) => {
+    const hex1 = color1.replace('#', '');
+    const hex2 = color2.replace('#', '');
+    const r1 = parseInt(hex1.substr(0, 2), 16);
+    const g1 = parseInt(hex1.substr(2, 2), 16);
+    const b1 = parseInt(hex1.substr(4, 2), 16);
+    const r2 = parseInt(hex2.substr(0, 2), 16);
+    const g2 = parseInt(hex2.substr(2, 2), 16);
+    const b2 = parseInt(hex2.substr(4, 2), 16);
+    const r = Math.round((r1 + r2) / 2);
+    const g = Math.round((g1 + g2) / 2);
+    const b = Math.round((b1 + b2) / 2);
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  }, []);
+
+  // Enhanced getTaskUnderMouse with error handling
+  const getTaskUnderMouse = useCallback((mouseX: number, mouseY: number) => {
+    try {
+      return tasks.find(task => {
+        const size = getTaskSize(task);
+        const distance = getDistance(mouseX, mouseY, task.x, task.y);
+        return distance <= size / 2;
+      });
+    } catch (error) {
+      console.error('Error in getTaskUnderMouse:', error);
+      return null;
+    }
+  }, [tasks, getTaskSize, getDistance]);
+
+  const getWeekDate = useCallback((weekNumber: number) => {
+    const startDate = new Date('2025-06-23');
+    const targetDate = new Date(startDate);
+    targetDate.setDate(startDate.getDate() + (weekNumber - 1) * 7);
+    return targetDate.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+  }, []);
+
+  // Your original mouse event handlers remain unchanged
+  const handleMouseDown = useCallback((e: React.MouseEvent, task: Task) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    setClickStartPos({ x: mouseX, y: mouseY });
+    
+    if (e.shiftKey) {
+      if (connectingFrom) {
+        if (connectingFrom.id !== task.id) {
+          const existingConnection = connections.find(conn => 
+            (conn.from === connectingFrom.id && conn.to === task.id) ||
+            (conn.from === task.id && conn.to === connectingFrom.id)
+          );
+          
+          if (!existingConnection) {
+            const newConnection: Connection = {
+              id: Date.now(),
+              from: connectingFrom.id,
+              to: task.id
+            };
+            setConnections(prev => [...prev, newConnection]);
+          }
+        }
+        setConnectingFrom(null);
+      } else {
+        setConnectingFrom(task);
+      }
+      return;
+    }
+    
+    dragOffset.current = {
+      x: mouseX - task.x,
+      y: mouseY - task.y
+    };
+    
+    setDraggedTask(task);
+    isDragging.current = true;
+  }, [connections, connectingFrom]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    setMousePos({ x: mouseX, y: mouseY });
+    
+    if (!isDragging.current || !draggedTask) {
+      const taskUnder = getTaskUnderMouse(mouseX, mouseY);
+      setHoveredTask(taskUnder || null);
+      return;
+    }
+    
+    const newX = mouseX - dragOffset.current.x;
+    const newY = mouseY - dragOffset.current.y;
+    
+    const taskUnder = getTaskUnderMouse(mouseX, mouseY);
+    setHoveredTask(taskUnder && taskUnder.id !== draggedTask.id ? taskUnder : null);
+    
+    setTasks(tasks.map(task => 
+      task.id === draggedTask.id 
+        ? { ...task, x: Math.max(50, Math.min(newX, 1100)), y: Math.max(50, Math.min(newY, 850)) }
+        : task
+    ));
+  }, [draggedTask, getTaskUnderMouse, tasks]);
+
+  const handleMouseUp = useCallback((e: React.MouseEvent) => {
+    if (clickStartPos && draggedTask) {
+      if (!canvasRef.current) return;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const dragDistance = getDistance(clickStartPos.x, clickStartPos.y, mouseX, mouseY);
+      
+      if (dragDistance < 5) {
+        setSelectedTask(draggedTask);
+        setModalClickPosition({ x: e.clientX, y: e.clientY });
+      }
+      
+      if (hoveredTask && draggedTask && hoveredTask.id !== draggedTask.id) {
+        const blendedColor = blendColors(draggedTask.color, hoveredTask.color);
+        setTasks(prev => prev.map(task => 
+          task.id === hoveredTask.id 
+            ? { ...task, color: blendedColor } 
+            : task
+        ));
+      }
+    }
+    
+    isDragging.current = false;
+    setDraggedTask(null);
+    setHoveredTask(null);
+    setClickStartPos(null);
+  }, [clickStartPos, draggedTask, getDistance, hoveredTask, blendColors]);
+
+  // Enhanced saveNotes with validation and error handling
+  const saveNotes = useCallback(() => {
+    if (!selectedTask) return;
+    
+    const sanitizedNotes = notesText.trim();
+    
+    setTasks(prevTasks => {
+      const updatedTasks = prevTasks.map(task => 
+        task.id === selectedTask.id 
+          ? { 
+              ...task, 
+              notes: sanitizedNotes,
+              calendarAlert,
+              lastModified: new Date('2025-07-07T14:48:03Z').toISOString()
+            }
+          : task
+      );
+      
+      if (updatedTasks.every(isValidTask)) {
+        return updatedTasks;
+      } else {
+        console.error('Invalid task data after notes update');
+        return prevTasks;
+      }
+    });
+
+    setSelectedTask(null);
+    setNotesText('');
+  }, [selectedTask, notesText, calendarAlert]);
+
+  // Rest of your original functions remain unchanged
+  const addNewTask = useCallback(() => {
+    if (newTaskTitle.trim()) {
+      const newTask: Task = {
+        id: Math.max(...tasks.map(t => t.id)) + 1,
+        title: newTaskTitle,
+        chapter: 1,
+        startWeek: Math.max(...tasks.map(t => t.startWeek)) + 1,
+        duration: 1,
+        color: "#8B5CF6",
+        priority: "medium",
+        x: 300 + Math.random() * 400,
+        y: 300 + Math.random() * 200,
+        notes: "",
+        calendarAlert: false,
+        lastModified: new Date('2025-07-07T14:48:03Z').toISOString()
+      };
+      setTasks(prevTasks => [...prevTasks, newTask]);
+      setNewTaskTitle('');
+    }
+  }, [newTaskTitle, tasks]);
+
+  const filteredTasks = useMemo(() => 
+    selectedChapter === 'all' 
+      ? tasks 
+      : tasks.filter(task => task.chapter === parseInt(selectedChapter))
+  , [tasks, selectedChapter]);
+
+  return (
+    <div className="w-full max-w-7xl mx-auto p-6 bg-gray-50 font-sans">
+      {!lastSaveStatus && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+          <p className="font-bold">Warning</p>
+          <p>There was an error saving your changes. Some data may be lost if you refresh the page.</p>
+        </div>
+      )}
+      
+      {/* Rest of your original JSX remains unchanged */}
+      <div className="mb-6">
+        <h1 className="text-4xl font-bold text-gray-800 mb-1">
+          Cronograma de Investigación Distribuida
+        </h1>
+        <p className="text-gray-500">
+          Explora tu investigación de forma no-lineal. Arrastra para mover, Shift+Click para conectar.
+        </p>
+      </div>
+
+      <Controls
+        chapters={chapters}
+        selectedChapter={selectedChapter}
+        setSelectedChapter={setSelectedChapter}
+        newTaskTitle={newTaskTitle}
+        setNewTaskTitle={setNewTaskTitle}
+        addNewTask={addNewTask}
+        exportToCSV={exportToCSV}
+        baseTaskSize={selectedTask?.size || baseTaskSize}
+        setBaseTaskSize={handleTaskSizeChange}
+        randomizePositions={randomizePositions}
+        deleteConnection={deleteConnection}
+        selectedConnection={selectedConnection}
+        setConnectingFrom={setConnectingFrom}
+        connectingFrom={connectingFrom}
+        resetToDefaults={resetToDefaults}
+      />
+
+      <Legend chapters={chapters} />
+
+      <TimelineCanvas
+        tasks={tasks}
+        connections={connections}
+        connectingFrom={connectingFrom}
+        hoveredTask={hoveredTask}
+        draggedTask={draggedTask}
+        selectedConnection={selectedConnection}
+        mousePos={mousePos}
+        canvasRef={canvasRef}
+        handleMouseMove={handleMouseMove}
+        handleMouseUp={handleMouseUp}
+        handleCanvasClick={handleCanvasClick}
+        handleConnectionClick={handleConnectionClick}
+        handleMouseDown={handleMouseDown}
+        getTaskSize={getTaskSize}
+        blendColors={blendColors}
+        filteredTasks={filteredTasks}
+      />
+
+      <TaskDetailsModal
+        selectedTask={selectedTask}
+        setSelectedTask={setSelectedTask}
+        notesText={notesText}
+        setNotesText={setNotesText}
+        calendarAlert={calendarAlert}
+        setCalendarAlert={setCalendarAlert}
+        saveNotes={saveNotes}
+        changePriority={changePriority}
+        deleteTask={deleteTask}
+        getWeekDate={getWeekDate}
+        handleAiResearch={handleAiResearch}
+        isResearching={isResearching}
+        aiResearchResult={aiResearchResult}
+        modalClickPosition={modalClickPosition}
+      />
+    </div>
+  );
+};
+
+export default ScatteredThesisTimeline;

@@ -21,11 +21,12 @@ const TimelineCanvas = ({
   deleteConnection
 }) => {
   return (
-    <div className="relative border border-gray-200 rounded-lg bg-white shadow-md overflow-hidden">
+    <div className="relative w-full h-[800px] bg-white overflow-hidden">
       <svg 
         ref={canvasRef}
-        width="1200" 
-        height="900"
+        width="100%" 
+        height="100%"
+        viewBox="0 0 1200 900"
         className="cursor-crosshair"
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

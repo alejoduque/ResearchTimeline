@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import Controls from './Controls';
-import Legend from './Legend';
+import { Plus, RotateCcw, Download, X, Trash2 } from 'lucide-react';
 import TimelineCanvas from './TimelineCanvas';
 import TaskDetailsModal from './TaskDetailsModal';
 
@@ -504,54 +503,170 @@ const ScatteredThesisTimeline = () => {
   , [tasks, selectedChapter]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 bg-gray-50 font-sans">
-      <div className="mb-6">
-        <h1 className="text-4xl font-bold text-gray-800 mb-1">
+    <div className="w-full max-w-7xl mx-auto p-4 bg-gray-50 font-sans">
+      {/* Compact Header */}
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold text-gray-800 mb-1">
           Cronograma de Investigación Distribuida
         </h1>
-        <p className="text-gray-500">
+        <p className="text-sm text-gray-500">
           Explora tu investigación de forma no-lineal. Arrastra para mover, Shift+Click para conectar.
         </p>
       </div>
 
-              <Controls
-          chapters={chapters}
-          selectedChapter={selectedChapter}
-          setSelectedChapter={setSelectedChapter}
-          newTaskTitle={newTaskTitle}
-          setNewTaskTitle={setNewTaskTitle}
-          addNewTask={addNewTask}
+      {/* Primary Controls */}
+      <div className="mb-3 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center space-x-2">
+              <label htmlFor="chapter-select" className="text-sm font-medium text-gray-600">📊 Capítulo:</label>
+              <select
+                id="chapter-select"
+                value={selectedChapter}
+                onChange={(e) => setSelectedChapter(e.target.value)}
+                className="border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">Todos</option>
+                {Object.entries(chapters).map(([num, { name }]) => (
+                  <option key={num} value={num}>{`Cap. ${num}: ${name}`}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-600">✏️ Nueva tarea:</label>
+              <input
+                type="text"
+                placeholder="Título de la tarea..."
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && addNewTask()}
+                className="border-gray-300 rounded-md px-3 py-1.5 text-sm w-48 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <button 
+                onClick={addNewTask} 
+                className="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors"
+                title="Agregar nueva tarea"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={randomizePositions}
+              className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
+              title="Aleatorizar posiciones"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>Aleatorizar</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Secondary Controls */}
+      <div className="mb-3 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-medium text-gray-600">📁 Exportar:</span>
+            <button
+              onClick={exportToCSV}
+              className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
+              title="Exportar a CSV"
+            >
+              <Download className="w-4 h-4" />
+              <span>CSV</span>
+            </button>
+            <button
+              onClick={exportToJSON}
+              className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+              title="Exportar a JSON"
+            >
+              <Download className="w-4 h-4" />
+              <span>JSON</span>
+            </button>
+            <label className="cursor-pointer" title="Importar JSON">
+              <input
+                type="file"
+                accept=".json"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    importFromJSON(file);
+                    e.target.value = '';
+                  }
+                }}
+                className="hidden"
+              />
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm">
+                <Download className="w-4 h-4 rotate-180" />
+                <span>Importar</span>
+              </div>
+            </label>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            {connectingFrom && (
+              <div className="flex items-center space-x-2 px-3 py-1.5 bg-purple-100 text-purple-800 rounded-md text-sm">
+                <span>🔗 Conectando: {connectingFrom.title.substring(0, 20)}...</span>
+                <button onClick={() => setConnectingFrom(null)} className="text-purple-500 hover:text-purple-700">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {selectedConnection && (
+              <button
+                onClick={deleteConnection}
+                className="flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors text-sm"
+                title="Eliminar conexión seleccionada"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Eliminar</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Compact Legend */}
+      <div className="mb-4 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="text-sm font-medium text-gray-600">📊 Capítulos:</span>
+            {Object.entries(chapters).map(([num, chapter]) => (
+              <div key={num} className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: chapter.color }} />
+                <span className="text-sm text-gray-700">{num}. {chapter.name}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center space-x-4 text-xs text-gray-500">
+            <span>📏 Prioridad: Alta (grande), Media, Baja (pequeño)</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Canvas Area - Full Width */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <TimelineCanvas
+          tasks={tasks}
+          connections={connections}
           connectingFrom={connectingFrom}
-          setConnectingFrom={setConnectingFrom}
+          hoveredTask={hoveredTask}
+          draggedTask={draggedTask}
           selectedConnection={selectedConnection}
+          mousePos={mousePos}
+          canvasRef={canvasRef}
+          handleMouseMove={handleMouseMove}
+          handleMouseUp={handleMouseUp}
+          handleCanvasClick={handleCanvasClick}
+          handleConnectionClick={handleConnectionClick}
+          handleMouseDown={handleMouseDown}
+          getTaskSize={getTaskSize}
+          blendColors={blendColors}
+          filteredTasks={filteredTasks}
           deleteConnection={deleteConnection}
-          randomizePositions={randomizePositions}
-          exportToCSV={exportToCSV}
-          exportToJSON={exportToJSON}
-          importFromJSON={importFromJSON}
         />
-
-      <Legend chapters={chapters} />
-
-      <TimelineCanvas
-        tasks={tasks}
-        connections={connections}
-        connectingFrom={connectingFrom}
-        hoveredTask={hoveredTask}
-        draggedTask={draggedTask}
-        selectedConnection={selectedConnection}
-        mousePos={mousePos}
-        canvasRef={canvasRef}
-        handleMouseMove={handleMouseMove}
-        handleMouseUp={handleMouseUp}
-        handleCanvasClick={handleCanvasClick}
-        handleConnectionClick={handleConnectionClick}
-        handleMouseDown={handleMouseDown}
-        getTaskSize={getTaskSize}
-        blendColors={blendColors}
-        filteredTasks={filteredTasks}
-        deleteConnection={deleteConnection}
-      />
+      </div>
 
       <TaskDetailsModal
         selectedTask={selectedTask}

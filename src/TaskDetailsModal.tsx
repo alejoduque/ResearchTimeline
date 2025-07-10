@@ -93,11 +93,11 @@ const TaskDetailsModal = ({
             {selectedTask.title}
           </div>
           
-          {/* Task Info Grid */}
+          {/* Task Info Grid with Calendar Alert */}
           <div 
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
               gap: '1rem',
               background: 'rgba(248, 250, 252, 0.8)',
               padding: '1.5rem',
@@ -141,10 +141,138 @@ const TaskDetailsModal = ({
                 {selectedTask.priority}
               </div>
             </div>
+            <div>
+              <div style={{ fontWeight: '600', color: '#475569', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                Alerta
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                <input
+                  type="checkbox"
+                  id="calendarAlert"
+                  checked={calendarAlert}
+                  onChange={(e) => setCalendarAlert(e.target.checked)}
+                  style={{ width: '1.25rem', height: '1.25rem', accentColor: '#3b82f6' }}
+                />
+                <label htmlFor="calendarAlert" style={{ fontSize: '0.875rem', color: '#374151', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <Bell size={14} />
+                  Calendario
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          {/* Action Bar - Fixed between info and content */}
+          <div 
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              justifyContent: 'center',
+              padding: '1rem',
+              background: 'rgba(248, 250, 252, 0.6)',
+              borderRadius: '12px',
+              border: '1px solid rgba(226, 232, 240, 0.3)'
+            }}
+          >
+            <button
+              onClick={saveNotes}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                transition: 'transform 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+              onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+            >
+              <Save size={20} />
+              <span>Guardar Notas</span>
+            </button>
+            
+            <button
+              onClick={() => changePriority(selectedTask.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                transition: 'transform 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+              onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+            >
+              <RotateCcw size={20} />
+              <span>Cambiar Prioridad</span>
+            </button>
+            
+            <button
+              onClick={() => deleteTask(selectedTask.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                transition: 'transform 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+              onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+            >
+              <Trash2 size={20} />
+              <span>Eliminar Tarea</span>
+            </button>
+            
+            <button
+              onClick={() => setSelectedTask(null)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                transition: 'transform 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+              onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+            >
+              <X size={20} />
+              <span>Cerrar</span>
+            </button>
           </div>
           
           {/* Markdown Section */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '400px' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '300px' }}>
             {/* Markdown Header with Toolbar */}
             <div 
               style={{
@@ -264,8 +392,8 @@ const TaskDetailsModal = ({
               value={notesText}
               onChange={(e) => setNotesText(e.target.value)}
               style={{
-                width: '90%',
-                minHeight: '280px',
+                width: '100%',
+                minHeight: '250px',
                 flex: 1,
                 padding: '1.5rem',
                 border: '2px solid rgba(209, 213, 219, 0.5)',
@@ -288,7 +416,7 @@ const TaskDetailsModal = ({
             </div>
           </div>
           
-          {/* AI Research Section */}
+          {/* AI Research Section - At the bottom */}
           <div 
             style={{
               background: 'linear-gradient(135deg, rgba(219, 234, 254, 0.6) 0%, rgba(191, 219, 254, 0.6) 100%)',
@@ -367,105 +495,6 @@ const TaskDetailsModal = ({
                 Escribe algunas notas primero para habilitar la investigación con IA.
               </p>
             )}
-          </div>
-          
-          {/* Calendar Alert */}
-          <div 
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              padding: '1rem',
-              background: 'rgba(248, 250, 252, 0.6)',
-              borderRadius: '12px',
-              border: '1px solid rgba(226, 232, 240, 0.3)'
-            }}
-          >
-            <input
-              type="checkbox"
-              id="calendarAlert"
-              checked={calendarAlert}
-              onChange={(e) => setCalendarAlert(e.target.checked)}
-              style={{ width: '1.25rem', height: '1.25rem', accentColor: '#3b82f6' }}
-            />
-            <label htmlFor="calendarAlert" style={{ fontSize: '1rem', color: '#374151', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Bell size={16} />
-              Crear alerta de calendario
-            </label>
-          </div>
-          
-          {/* Action Buttons */}
-          <div 
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '1rem',
-              justifyContent: 'center',
-              marginTop: '1rem'
-            }}
-          >
-            <button
-              onClick={saveNotes}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.75rem 1.5rem',
-                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-              }}
-            >
-              <Save size={20} />
-              <span>Guardar Notas</span>
-            </button>
-            
-            <button
-              onClick={() => changePriority(selectedTask.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.75rem 1.5rem',
-                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-              }}
-            >
-              <RotateCcw size={20} />
-              <span>Cambiar Prioridad</span>
-            </button>
-            
-            <button
-              onClick={() => deleteTask(selectedTask.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.75rem 1.5rem',
-                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-              }}
-            >
-              <Trash2 size={20} />
-              <span>Eliminar Tarea</span>
-            </button>
           </div>
         </div>
       </div>
