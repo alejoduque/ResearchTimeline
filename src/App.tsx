@@ -5,44 +5,117 @@ import TimelineCanvas from './TimelineCanvas';
 import TaskDetailsModal from './TaskDetailsModal';
 
 const ScatteredThesisTimeline = () => {
-  const [tasks, setTasks] = useState([
-    // Chapter 1
-    { id: 1, title: "Bioacústica - Más allá del antropocentrismo sonoro", chapter: 1, startWeek: 1, duration: 1, color: "#3B82F6", priority: "high", x: 150, y: 120, notes: "", calendarAlert: false },
-    { id: 2, title: "Encuentro Entre Especies y Espectros [e4]", chapter: 1, startWeek: 2, duration: 1, color: "#3B82F6", priority: "high", x: 320, y: 80, notes: "", calendarAlert: false },
-    { id: 3, title: "Artes de la Transmisión (Full spectrum radio)", chapter: 1, startWeek: 3, duration: 1, color: "#3B82F6", priority: "medium", x: 480, y: 140, notes: "", calendarAlert: false },
-    { id: 4, title: "Inteligencia de máquinas y arte (Google AMI)", chapter: 1, startWeek: 4, duration: 1, color: "#3B82F6", priority: "high", x: 680, y: 100, notes: "", calendarAlert: false },
-    { id: 5, title: "Monitoreo y Sonificación (Wildlabs)", chapter: 1, startWeek: 5, duration: 1, color: "#3B82F6", priority: "medium", x: 820, y: 160, notes: "", calendarAlert: false },
+  // Load saved tasks from localStorage or use default tasks
+  const getInitialTasks = () => {
+    const savedTasks = localStorage.getItem('thesis-timeline-tasks');
+    if (savedTasks) {
+      try {
+        const parsed = JSON.parse(savedTasks);
+        // Merge saved notes with default task structure
+        const defaultTasks = [
+          // Chapter 1
+          { id: 1, title: "Bioacústica - Más allá del antropocentrismo sonoro", chapter: 1, startWeek: 1, duration: 1, color: "#3B82F6", priority: "high", x: 150, y: 120, notes: "", calendarAlert: false },
+          { id: 2, title: "Encuentro Entre Especies y Espectros [e4]", chapter: 1, startWeek: 2, duration: 1, color: "#3B82F6", priority: "high", x: 320, y: 80, notes: "", calendarAlert: false },
+          { id: 3, title: "Artes de la Transmisión (Full spectrum radio)", chapter: 1, startWeek: 3, duration: 1, color: "#3B82F6", priority: "medium", x: 480, y: 140, notes: "", calendarAlert: false },
+          { id: 4, title: "Inteligencia de máquinas y arte (Google AMI)", chapter: 1, startWeek: 4, duration: 1, color: "#3B82F6", priority: "high", x: 680, y: 100, notes: "", calendarAlert: false },
+          { id: 5, title: "Monitoreo y Sonificación (Wildlabs)", chapter: 1, startWeek: 5, duration: 1, color: "#3B82F6", priority: "medium", x: 820, y: 160, notes: "", calendarAlert: false },
+          
+          // Chapter 2
+          { id: 6, title: "Sub/culturas - Reinventar/reconstruir", chapter: 2, startWeek: 6, duration: 1, color: "#10B981", priority: "high", x: 180, y: 280, notes: "", calendarAlert: false },
+          { id: 7, title: "Tec-sincretismo (EGS)", chapter: 2, startWeek: 7, duration: 1, color: "#10B981", priority: "medium", x: 350, y: 320, notes: "", calendarAlert: false },
+          { id: 8, title: "Espectros sonoros", chapter: 2, startWeek: 8, duration: 1, color: "#10B981", priority: "medium", x: 520, y: 260, notes: "", calendarAlert: false },
+          { id: 9, title: "De IAP a DAO", chapter: 2, startWeek: 9, duration: 1, color: "#10B981", priority: "high", x: 720, y: 300, notes: "", calendarAlert: false },
+          { id: 10, title: "Parlamento de lo vivo - Édouard Glissant", chapter: 2, startWeek: 10, duration: 1, color: "#10B981", priority: "high", x: 890, y: 240, notes: "", calendarAlert: false },
+          { id: 11, title: "Agenciamientos multiespecie", chapter: 2, startWeek: 11, duration: 1, color: "#10B981", priority: "medium", x: 1000, y: 320, notes: "", calendarAlert: false },
+          
+          // Chapter 3
+          { id: 12, title: "Biocracia - Nueva Gobernanza Inter-especies", chapter: 3, startWeek: 12, duration: 1, color: "#F59E0B", priority: "high", x: 120, y: 450, notes: "", calendarAlert: false },
+          { id: 13, title: "Sistemas de información geográfica (SIG)", chapter: 3, startWeek: 13, duration: 1, color: "#F59E0B", priority: "high", x: 300, y: 480, notes: "", calendarAlert: false },
+          { id: 14, title: "El jaguar y el ocelote", chapter: 3, startWeek: 14, duration: 1, color: "#F59E0B", priority: "medium", x: 480, y: 420, notes: "", calendarAlert: false },
+          { id: 15, title: "Redes de comunicación interespecífica", chapter: 3, startWeek: 15, duration: 1, color: "#F59E0B", priority: "medium", x: 650, y: 460, notes: "", calendarAlert: false },
+          { id: 16, title: "Archivos híbridos", chapter: 3, startWeek: 16, duration: 1, color: "#F59E0B", priority: "high", x: 820, y: 400, notes: "", calendarAlert: false },
+          { id: 17, title: "Arte y Sensibilización Ecológica", chapter: 3, startWeek: 17, duration: 1, color: "#F59E0B", priority: "medium", x: 980, y: 480, notes: "", calendarAlert: false },
+          { id: 18, title: "Tokenización de participación ecosistémica", chapter: 3, startWeek: 18, duration: 1, color: "#F59E0B", priority: "high", x: 150, y: 580, notes: "", calendarAlert: false },
+          { id: 19, title: "LiquidIce - Desarrollo y programación", chapter: 3, startWeek: 19, duration: 1, color: "#F59E0B", priority: "high", x: 380, y: 600, notes: "", calendarAlert: false },
+          { id: 20, title: "Sistema PAM como base para DAO", chapter: 3, startWeek: 20, duration: 1, color: "#F59E0B", priority: "high", x: 580, y: 540, notes: "", calendarAlert: false },
+          { id: 21, title: "Espacialización sonora", chapter: 3, startWeek: 21, duration: 1, color: "#F59E0B", priority: "medium", x: 750, y: 580, notes: "", calendarAlert: false },
+          { id: 22, title: "Monitoreo, IA y análisis de redes", chapter: 3, startWeek: 22, duration: 1, color: "#F59E0B", priority: "high", x: 920, y: 620, notes: "", calendarAlert: false },
+          
+          // Review phases
+          { id: 23, title: "Revisión integral Capítulo 1", chapter: 4, startWeek: 23, duration: 1, color: "#EF4444", priority: "high", x: 200, y: 720, notes: "", calendarAlert: false },
+          { id: 24, title: "Revisión integral Capítulo 2", chapter: 4, startWeek: 24, duration: 1, color: "#EF4444", priority: "high", x: 450, y: 750, notes: "", calendarAlert: false },
+          { id: 25, title: "Revisión integral Capítulo 3", chapter: 4, startWeek: 25, duration: 1, color: "#EF4444", priority: "high", x: 700, y: 720, notes: "", calendarAlert: false },
+          { id: 26, title: "Integración y conclusiones generales", chapter: 4, startWeek: 26, duration: 1, color: "#EF4444", priority: "high", x: 500, y: 820, notes: "", calendarAlert: false },
+          { id: 27, title: "Revisión final y preparación de presentación", chapter: 4, startWeek: 27, duration: 1, color: "#EF4444", priority: "high", x: 750, y: 800, notes: "", calendarAlert: false }
+        ];
+        
+        // Merge saved notes and calendar alerts with default tasks
+        return defaultTasks.map(defaultTask => {
+          const savedTask = parsed.find(t => t.id === defaultTask.id);
+          return savedTask 
+            ? { ...defaultTask, notes: savedTask.notes || "", calendarAlert: savedTask.calendarAlert || false }
+            : defaultTask;
+        });
+      } catch (error) {
+        console.error('Error loading saved tasks:', error);
+      }
+    }
     
-    // Chapter 2
-    { id: 6, title: "Sub/culturas - Reinventar/reconstruir", chapter: 2, startWeek: 6, duration: 1, color: "#10B981", priority: "high", x: 180, y: 280, notes: "", calendarAlert: false },
-    { id: 7, title: "Tec-sincretismo (EGS)", chapter: 2, startWeek: 7, duration: 1, color: "#10B981", priority: "medium", x: 350, y: 320, notes: "", calendarAlert: false },
-    { id: 8, title: "Espectros sonoros", chapter: 2, startWeek: 8, duration: 1, color: "#10B981", priority: "medium", x: 520, y: 260, notes: "", calendarAlert: false },
-    { id: 9, title: "De IAP a DAO", chapter: 2, startWeek: 9, duration: 1, color: "#10B981", priority: "high", x: 720, y: 300, notes: "", calendarAlert: false },
-    { id: 10, title: "Parlamento de lo vivo - Édouard Glissant", chapter: 2, startWeek: 10, duration: 1, color: "#10B981", priority: "high", x: 890, y: 240, notes: "", calendarAlert: false },
-    { id: 11, title: "Agenciamientos multiespecie", chapter: 2, startWeek: 11, duration: 1, color: "#10B981", priority: "medium", x: 1000, y: 320, notes: "", calendarAlert: false },
-    
-    // Chapter 3
-    { id: 12, title: "Biocracia - Nueva Gobernanza Inter-especies", chapter: 3, startWeek: 12, duration: 1, color: "#F59E0B", priority: "high", x: 120, y: 450, notes: "", calendarAlert: false },
-    { id: 13, title: "Sistemas de información geográfica (SIG)", chapter: 3, startWeek: 13, duration: 1, color: "#F59E0B", priority: "high", x: 300, y: 480, notes: "", calendarAlert: false },
-    { id: 14, title: "El jaguar y el ocelote", chapter: 3, startWeek: 14, duration: 1, color: "#F59E0B", priority: "medium", x: 480, y: 420, notes: "", calendarAlert: false },
-    { id: 15, title: "Redes de comunicación interespecífica", chapter: 3, startWeek: 15, duration: 1, color: "#F59E0B", priority: "medium", x: 650, y: 460, notes: "", calendarAlert: false },
-    { id: 16, title: "Archivos híbridos", chapter: 3, startWeek: 16, duration: 1, color: "#F59E0B", priority: "high", x: 820, y: 400, notes: "", calendarAlert: false },
-    { id: 17, title: "Arte y Sensibilización Ecológica", chapter: 3, startWeek: 17, duration: 1, color: "#F59E0B", priority: "medium", x: 980, y: 480, notes: "", calendarAlert: false },
-    { id: 18, title: "Tokenización de participación ecosistémica", chapter: 3, startWeek: 18, duration: 1, color: "#F59E0B", priority: "high", x: 150, y: 580, notes: "", calendarAlert: false },
-    { id: 19, title: "LiquidIce - Desarrollo y programación", chapter: 3, startWeek: 19, duration: 1, color: "#F59E0B", priority: "high", x: 380, y: 600, notes: "", calendarAlert: false },
-    { id: 20, title: "Sistema PAM como base para DAO", chapter: 3, startWeek: 20, duration: 1, color: "#F59E0B", priority: "high", x: 580, y: 540, notes: "", calendarAlert: false },
-    { id: 21, title: "Espacialización sonora", chapter: 3, startWeek: 21, duration: 1, color: "#F59E0B", priority: "medium", x: 750, y: 580, notes: "", calendarAlert: false },
-    { id: 22, title: "Monitoreo, IA y análisis de redes", chapter: 3, startWeek: 22, duration: 1, color: "#F59E0B", priority: "high", x: 920, y: 620, notes: "", calendarAlert: false },
-    
-    // Review phases
-    { id: 23, title: "Revisión integral Capítulo 1", chapter: 4, startWeek: 23, duration: 1, color: "#EF4444", priority: "high", x: 200, y: 720, notes: "", calendarAlert: false },
-    { id: 24, title: "Revisión integral Capítulo 2", chapter: 4, startWeek: 24, duration: 1, color: "#EF4444", priority: "high", x: 450, y: 750, notes: "", calendarAlert: false },
-    { id: 25, title: "Revisión integral Capítulo 3", chapter: 4, startWeek: 25, duration: 1, color: "#EF4444", priority: "high", x: 700, y: 720, notes: "", calendarAlert: false },
-    { id: 26, title: "Integración y conclusiones generales", chapter: 4, startWeek: 26, duration: 1, color: "#EF4444", priority: "high", x: 500, y: 820, notes: "", calendarAlert: false },
-    { id: 27, title: "Revisión final y preparación de presentación", chapter: 4, startWeek: 27, duration: 1, color: "#EF4444", priority: "high", x: 750, y: 800, notes: "", calendarAlert: false }
-  ]);
+    // Return default tasks if no saved data
+    return [
+      // Chapter 1
+      { id: 1, title: "Bioacústica - Más allá del antropocentrismo sonoro", chapter: 1, startWeek: 1, duration: 1, color: "#3B82F6", priority: "high", x: 150, y: 120, notes: "", calendarAlert: false },
+      { id: 2, title: "Encuentro Entre Especies y Espectros [e4]", chapter: 1, startWeek: 2, duration: 1, color: "#3B82F6", priority: "high", x: 320, y: 80, notes: "", calendarAlert: false },
+      { id: 3, title: "Artes de la Transmisión (Full spectrum radio)", chapter: 1, startWeek: 3, duration: 1, color: "#3B82F6", priority: "medium", x: 480, y: 140, notes: "", calendarAlert: false },
+      { id: 4, title: "Inteligencia de máquinas y arte (Google AMI)", chapter: 1, startWeek: 4, duration: 1, color: "#3B82F6", priority: "high", x: 680, y: 100, notes: "", calendarAlert: false },
+      { id: 5, title: "Monitoreo y Sonificación (Wildlabs)", chapter: 1, startWeek: 5, duration: 1, color: "#3B82F6", priority: "medium", x: 820, y: 160, notes: "", calendarAlert: false },
+      
+      // Chapter 2
+      { id: 6, title: "Sub/culturas - Reinventar/reconstruir", chapter: 2, startWeek: 6, duration: 1, color: "#10B981", priority: "high", x: 180, y: 280, notes: "", calendarAlert: false },
+      { id: 7, title: "Tec-sincretismo (EGS)", chapter: 2, startWeek: 7, duration: 1, color: "#10B981", priority: "medium", x: 350, y: 320, notes: "", calendarAlert: false },
+      { id: 8, title: "Espectros sonoros", chapter: 2, startWeek: 8, duration: 1, color: "#10B981", priority: "medium", x: 520, y: 260, notes: "", calendarAlert: false },
+      { id: 9, title: "De IAP a DAO", chapter: 2, startWeek: 9, duration: 1, color: "#10B981", priority: "high", x: 720, y: 300, notes: "", calendarAlert: false },
+      { id: 10, title: "Parlamento de lo vivo - Édouard Glissant", chapter: 2, startWeek: 10, duration: 1, color: "#10B981", priority: "high", x: 890, y: 240, notes: "", calendarAlert: false },
+      { id: 11, title: "Agenciamientos multiespecie", chapter: 2, startWeek: 11, duration: 1, color: "#10B981", priority: "medium", x: 1000, y: 320, notes: "", calendarAlert: false },
+      
+      // Chapter 3
+      { id: 12, title: "Biocracia - Nueva Gobernanza Inter-especies", chapter: 3, startWeek: 12, duration: 1, color: "#F59E0B", priority: "high", x: 120, y: 450, notes: "", calendarAlert: false },
+      { id: 13, title: "Sistemas de información geográfica (SIG)", chapter: 3, startWeek: 13, duration: 1, color: "#F59E0B", priority: "high", x: 300, y: 480, notes: "", calendarAlert: false },
+      { id: 14, title: "El jaguar y el ocelote", chapter: 3, startWeek: 14, duration: 1, color: "#F59E0B", priority: "medium", x: 480, y: 420, notes: "", calendarAlert: false },
+      { id: 15, title: "Redes de comunicación interespecífica", chapter: 3, startWeek: 15, duration: 1, color: "#F59E0B", priority: "medium", x: 650, y: 460, notes: "", calendarAlert: false },
+      { id: 16, title: "Archivos híbridos", chapter: 3, startWeek: 16, duration: 1, color: "#F59E0B", priority: "high", x: 820, y: 400, notes: "", calendarAlert: false },
+      { id: 17, title: "Arte y Sensibilización Ecológica", chapter: 3, startWeek: 17, duration: 1, color: "#F59E0B", priority: "medium", x: 980, y: 480, notes: "", calendarAlert: false },
+      { id: 18, title: "Tokenización de participación ecosistémica", chapter: 3, startWeek: 18, duration: 1, color: "#F59E0B", priority: "high", x: 150, y: 580, notes: "", calendarAlert: false },
+      { id: 19, title: "LiquidIce - Desarrollo y programación", chapter: 3, startWeek: 19, duration: 1, color: "#F59E0B", priority: "high", x: 380, y: 600, notes: "", calendarAlert: false },
+      { id: 20, title: "Sistema PAM como base para DAO", chapter: 3, startWeek: 20, duration: 1, color: "#F59E0B", priority: "high", x: 580, y: 540, notes: "", calendarAlert: false },
+      { id: 21, title: "Espacialización sonora", chapter: 3, startWeek: 21, duration: 1, color: "#F59E0B", priority: "medium", x: 750, y: 580, notes: "", calendarAlert: false },
+      { id: 22, title: "Monitoreo, IA y análisis de redes", chapter: 3, startWeek: 22, duration: 1, color: "#F59E0B", priority: "high", x: 920, y: 620, notes: "", calendarAlert: false },
+      
+      // Review phases
+      { id: 23, title: "Revisión integral Capítulo 1", chapter: 4, startWeek: 23, duration: 1, color: "#EF4444", priority: "high", x: 200, y: 720, notes: "", calendarAlert: false },
+      { id: 24, title: "Revisión integral Capítulo 2", chapter: 4, startWeek: 24, duration: 1, color: "#EF4444", priority: "high", x: 450, y: 750, notes: "", calendarAlert: false },
+      { id: 25, title: "Revisión integral Capítulo 3", chapter: 4, startWeek: 25, duration: 1, color: "#EF4444", priority: "high", x: 700, y: 720, notes: "", calendarAlert: false },
+      { id: 26, title: "Integración y conclusiones generales", chapter: 4, startWeek: 26, duration: 1, color: "#EF4444", priority: "high", x: 500, y: 820, notes: "", calendarAlert: false },
+      { id: 27, title: "Revisión final y preparación de presentación", chapter: 4, startWeek: 27, duration: 1, color: "#EF4444", priority: "high", x: 750, y: 800, notes: "", calendarAlert: false }
+    ];
+  };
 
-  const [connections, setConnections] = useState([]);
+  const [tasks, setTasks] = useState(getInitialTasks);
+
+  // Load saved connections from localStorage
+  const getInitialConnections = () => {
+    const savedConnections = localStorage.getItem('thesis-timeline-connections');
+    if (savedConnections) {
+      try {
+        return JSON.parse(savedConnections);
+      } catch (error) {
+        console.error('Error loading saved connections:', error);
+      }
+    }
+    return [];
+  };
+
+  const [connections, setConnections] = useState(getInitialConnections);
   const [draggedTask, setDraggedTask] = useState(null);
   const [hoveredTask, setHoveredTask] = useState(null);
   const [selectedConnection, setSelectedConnection] = useState(null);
@@ -146,7 +219,9 @@ const ScatteredThesisTimeline = () => {
               from: connectingFrom.id,
               to: task.id
             };
-            setConnections(prev => [...prev, newConnection]);
+            const updatedConnections = [...connections, newConnection];
+            setConnections(updatedConnections);
+            localStorage.setItem('thesis-timeline-connections', JSON.stringify(updatedConnections));
           }
         }
         setConnectingFrom(null);
@@ -224,7 +299,9 @@ const ScatteredThesisTimeline = () => {
 
   const deleteConnection = useCallback(() => {
     if (selectedConnection) {
-      setConnections(connections.filter(conn => conn.id !== selectedConnection.id));
+      const updatedConnections = connections.filter(conn => conn.id !== selectedConnection.id);
+      setConnections(updatedConnections);
+      localStorage.setItem('thesis-timeline-connections', JSON.stringify(updatedConnections));
       setSelectedConnection(null);
     }
   }, [connections, selectedConnection]);
@@ -243,14 +320,19 @@ const ScatteredThesisTimeline = () => {
   }, [getTaskUnderMouse]);
 
   const saveNotes = useCallback(() => {
-    setTasks(tasks => tasks.map(task => 
+    const updatedTasks = tasks.map(task => 
       task.id === selectedTask.id 
         ? { ...task, notes: notesText, calendarAlert: calendarAlert }
         : task
-    ));
+    );
+    setTasks(updatedTasks);
+    
+    // Save to localStorage
+    localStorage.setItem('thesis-timeline-tasks', JSON.stringify(updatedTasks));
+    
     setSelectedTask(null);
     setNotesText('');
-  }, [selectedTask, notesText, calendarAlert]);
+  }, [selectedTask, notesText, calendarAlert, tasks]);
 
   const addNewTask = useCallback(() => {
     if (newTaskTitle.trim()) {
@@ -267,18 +349,25 @@ const ScatteredThesisTimeline = () => {
         notes: "",
         calendarAlert: false
       };
-      setTasks(prevTasks => [...prevTasks, newTask]);
+      const updatedTasks = [...tasks, newTask];
+      setTasks(updatedTasks);
+      localStorage.setItem('thesis-timeline-tasks', JSON.stringify(updatedTasks));
       setNewTaskTitle('');
     }
   }, [newTaskTitle, tasks]);
 
   const deleteTask = useCallback((taskId) => {
-    setTasks(prev => prev.filter(task => task.id !== taskId));
-    setConnections(prev => prev.filter(conn => conn.from !== taskId && conn.to !== taskId));
+    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    setTasks(updatedTasks);
+    localStorage.setItem('thesis-timeline-tasks', JSON.stringify(updatedTasks));
+    
+    const updatedConnections = connections.filter(conn => conn.from !== taskId && conn.to !== taskId);
+    setConnections(updatedConnections);
+    localStorage.setItem('thesis-timeline-connections', JSON.stringify(updatedConnections));
     if (selectedTask && selectedTask.id === taskId) {
       setSelectedTask(null);
     }
-  }, [selectedTask]);
+  }, [selectedTask, tasks]);
 
   const changePriority = useCallback((taskId) => {
     const priorities = ['low', 'medium', 'high'];
@@ -418,6 +507,7 @@ const ScatteredThesisTimeline = () => {
         getTaskSize={getTaskSize}
         blendColors={blendColors}
         filteredTasks={filteredTasks}
+        deleteConnection={deleteConnection}
       />
 
       <TaskDetailsModal

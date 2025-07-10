@@ -17,7 +17,8 @@ const TimelineCanvas = ({
   handleMouseDown,
   getTaskSize,
   blendColors,
-  filteredTasks
+  filteredTasks,
+  deleteConnection
 }) => {
   return (
     <div className="relative border border-gray-200 rounded-lg bg-white shadow-md overflow-hidden">
@@ -73,6 +74,39 @@ const TimelineCanvas = ({
                 markerEnd="url(#arrowhead)"
                 className="transition-all"
               />
+              {isSelected && (
+                <g>
+                  <circle
+                    cx={(fromX + toX) / 2}
+                    cy={(fromY + toY) / 2}
+                    r="12"
+                    fill="#EF4444"
+                    stroke="white"
+                    strokeWidth="2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteConnection();
+                    }}
+                    className="cursor-pointer hover:fill-red-600"
+                  />
+                  <text
+                    x={(fromX + toX) / 2}
+                    y={(fromY + toY) / 2}
+                    textAnchor="middle"
+                    dy="0.35em"
+                    fill="white"
+                    fontSize="12"
+                    fontWeight="bold"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteConnection();
+                    }}
+                    className="cursor-pointer"
+                  >
+                    ×
+                  </text>
+                </g>
+              )}
             </g>
           );
         })}
