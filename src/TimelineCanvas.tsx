@@ -15,6 +15,8 @@ const TimelineCanvas = ({
   handleCanvasClick,
   handleConnectionClick,
   handleMouseDown,
+  handleTaskDoubleClick,
+  handleTaskResize,
   getTaskSize,
   blendColors,
   filteredTasks,
@@ -27,7 +29,7 @@ const TimelineCanvas = ({
         width="100%" 
         height="100%"
         viewBox="0 0 1200 900"
-        className="cursor-crosshair"
+        className={`cursor-crosshair ${connectingFrom ? 'no-tooltips' : ''}`}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -133,6 +135,8 @@ const TimelineCanvas = ({
             blendColors={blendColors}
             draggedTask={draggedTask}
             handleMouseDown={handleMouseDown}
+            handleTaskDoubleClick={handleTaskDoubleClick}
+            handleTaskResize={handleTaskResize}
           />
         ))}
       </svg>

@@ -1,32 +1,11 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { Box, AppBar, Toolbar, Typography, IconButton, Paper, Chip, Select, MenuItem, FormControl, InputLabel, Button, Switch, FormControlLabel } from '@mui/material';
-import { Brightness4, Brightness7, Add, GetApp, Upload, Delete } from '@mui/icons-material';
+import { Brightness4, Brightness7, Add, Casino, GetApp, Upload, Delete } from '@mui/icons-material';
 import TimelineCanvas from './TimelineCanvas';
 import TaskDetailsModal from './TaskDetailsModal';
 import { createAppTheme } from './theme';
 import './App.css';
-
-// Task interface
-interface Task {
-  id: number;
-  title: string;
-  chapter: number;
-  startWeek: number;
-  duration: number;
-  color: string;
-  priority: string;
-  x: number;
-  y: number;
-  notes?: string;
-  calendarAlert?: boolean;
-}
-
-interface Connection {
-  id: number;
-  from: number;
-  to: number;
-}
 
 const ScatteredThesisTimeline = () => {
   // Load saved tasks from localStorage or use default tasks
@@ -69,19 +48,19 @@ const ScatteredThesisTimeline = () => {
           { id: 23, title: "Revisión integral Capítulo 1", chapter: 4, startWeek: 23, duration: 1, color: "#EF4444", priority: "high", x: 200, y: 720, notes: "", calendarAlert: false },
           { id: 24, title: "Revisión integral Capítulo 2", chapter: 4, startWeek: 24, duration: 1, color: "#EF4444", priority: "high", x: 450, y: 750, notes: "", calendarAlert: false },
           { id: 25, title: "Revisión integral Capítulo 3", chapter: 4, startWeek: 25, duration: 1, color: "#EF4444", priority: "high", x: 700, y: 720, notes: "", calendarAlert: false },
-          
-          // Final phases
-          { id: 26, title: "Integración y síntesis final", chapter: 5, startWeek: 26, duration: 1, color: "#8B5CF6", priority: "high", x: 300, y: 850, notes: "", calendarAlert: false },
-          { id: 27, title: "Revisión y correcciones finales", chapter: 5, startWeek: 27, duration: 1, color: "#8B5CF6", priority: "high", x: 600, y: 880, notes: "", calendarAlert: false },
-          { id: 28, title: "Preparación para defensa", chapter: 5, startWeek: 28, duration: 1, color: "#8B5CF6", priority: "high", x: 450, y: 950, notes: "", calendarAlert: false }
+          { id: 26, title: "Integración y conclusiones generales", chapter: 4, startWeek: 26, duration: 1, color: "#EF4444", priority: "high", x: 500, y: 820, notes: "", calendarAlert: false },
+          { id: 27, title: "Revisión final y preparación de presentación", chapter: 4, startWeek: 27, duration: 1, color: "#EF4444", priority: "high", x: 750, y: 800, notes: "", calendarAlert: false }
         ];
         
+        // Merge saved notes and calendar alerts with default tasks
         return defaultTasks.map(defaultTask => {
-          const savedTask = parsed.find((t: any) => t.id === defaultTask.id);
-          return savedTask ? { ...defaultTask, ...savedTask } : defaultTask;
+          const savedTask = parsed.find(t => t.id === defaultTask.id);
+          return savedTask 
+            ? { ...defaultTask, notes: savedTask.notes || "", calendarAlert: savedTask.calendarAlert || false }
+            : defaultTask;
         });
       } catch (error) {
-        console.error('Error parsing saved tasks:', error);
+        console.error('Error loading saved tasks:', error);
       }
     }
     
@@ -119,13 +98,12 @@ const ScatteredThesisTimeline = () => {
       { id: 23, title: "Revisión integral Capítulo 1", chapter: 4, startWeek: 23, duration: 1, color: "#EF4444", priority: "high", x: 200, y: 720, notes: "", calendarAlert: false },
       { id: 24, title: "Revisión integral Capítulo 2", chapter: 4, startWeek: 24, duration: 1, color: "#EF4444", priority: "high", x: 450, y: 750, notes: "", calendarAlert: false },
       { id: 25, title: "Revisión integral Capítulo 3", chapter: 4, startWeek: 25, duration: 1, color: "#EF4444", priority: "high", x: 700, y: 720, notes: "", calendarAlert: false },
-      
-      // Final phases
-      { id: 26, title: "Integración y síntesis final", chapter: 5, startWeek: 26, duration: 1, color: "#8B5CF6", priority: "high", x: 300, y: 850, notes: "", calendarAlert: false },
-      { id: 27, title: "Revisión y correcciones finales", chapter: 5, startWeek: 27, duration: 1, color: "#8B5CF6", priority: "high", x: 600, y: 880, notes: "", calendarAlert: false },
-      { id: 28, title: "Preparación para defensa", chapter: 5, startWeek: 28, duration: 1, color: "#8B5CF6", priority: "high", x: 450, y: 950, notes: "", calendarAlert: false }
+      { id: 26, title: "Integración y conclusiones generales", chapter: 4, startWeek: 26, duration: 1, color: "#EF4444", priority: "high", x: 500, y: 820, notes: "", calendarAlert: false },
+      { id: 27, title: "Revisión final y preparación de presentación", chapter: 4, startWeek: 27, duration: 1, color: "#EF4444", priority: "high", x: 750, y: 800, notes: "", calendarAlert: false }
     ];
   };
+
+  const [tasks, setTasks] = useState(getInitialTasks);
 
   // Load saved connections from localStorage
   const getInitialConnections = () => {
@@ -134,431 +112,363 @@ const ScatteredThesisTimeline = () => {
       try {
         return JSON.parse(savedConnections);
       } catch (error) {
-        console.error('Error parsing saved connections:', error);
+        console.error('Error loading saved connections:', error);
       }
     }
     return [];
   };
 
-  // Theme state - default to dark mode
-  const [darkMode, setDarkMode] = useState(true);
-  const theme = useMemo(() => createAppTheme(darkMode ? 'dark' : 'light'), [darkMode]);
-
-  // Task and connection data
-  const [tasks, setTasks] = useState<Task[]>(getInitialTasks());
-  const [connections, setConnections] = useState<Connection[]>(getInitialConnections());
-
-  // UI state
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [connections, setConnections] = useState(getInitialConnections);
+  const [draggedTask, setDraggedTask] = useState(null);
+  const [hoveredTask, setHoveredTask] = useState(null);
+  const [selectedConnection, setSelectedConnection] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [selectedChapter, setSelectedChapter] = useState('all');
   const [notesText, setNotesText] = useState('');
   const [calendarAlert, setCalendarAlert] = useState(false);
-  const [connectingFrom, setConnectingFrom] = useState<Task | null>(null);
-  const [hoveredTask, setHoveredTask] = useState<Task | null>(null);
-  const [draggedTask, setDraggedTask] = useState<Task | null>(null);
-  const [selectedConnection, setSelectedConnection] = useState<Connection | null>(null);
+  const [connectingFrom, setConnectingFrom] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [chapterFilter, setChapterFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [clickStartPos, setClickStartPos] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
-  const canvasRef = useRef<HTMLDivElement>(null);
+  // Create Material UI theme
+  const theme = useMemo(() => createAppTheme(darkMode ? 'dark' : 'light'), [darkMode]);
 
-  // Chapter definitions
-  const chapters = {
-    1: { name: "Bioacústica y Transmisión", color: "#3B82F6" },
-    2: { name: "Subculturas y Agenciamientos", color: "#10B981" },
-    3: { name: "Biocracia y Desarrollo", color: "#F59E0B" },
-    4: { name: "Revisión Integral", color: "#EF4444" },
-    5: { name: "Síntesis Final", color: "#8B5CF6" }
-  };
+  const canvasRef = useRef(null);
+  const isDragging = useRef(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
 
-  // Save tasks to localStorage whenever tasks change
   useEffect(() => {
-    localStorage.setItem('thesis-timeline-tasks', JSON.stringify(tasks));
-  }, [tasks]);
+    if (selectedTask) {
+      setNotesText(selectedTask.notes || '');
+      setCalendarAlert(selectedTask.calendarAlert || false);
 
-  // Save connections to localStorage whenever connections change
-  useEffect(() => {
-    localStorage.setItem('thesis-timeline-connections', JSON.stringify(connections));
-  }, [connections]);
-
-  // Update data-theme attribute for CSS variables
-  useEffect(() => {
-    document.body.setAttribute('data-theme', darkMode ? 'dark' : 'light');
-  }, [darkMode]);
-
-  // Utility functions
-  const getTaskSize = (priority: string) => {
-    switch (priority) {
-      case 'high':
-      case 'alta': return 50;
-      case 'medium':
-      case 'media': return 35;
-      case 'low':
-      case 'baja': return 25;
-      default: return 35;
     }
+  }, [selectedTask]);
+
+  const chapters = {
+    1: { name: "Encuentro Entre Especies y Espectros", color: "#3B82F6" },
+    2: { name: "Poéticas de la relación", color: "#10B981" },
+    3: { name: "Mediaciones e interfaces", color: "#F59E0B" },
+    4: { name: "Revisión y Consolidación", color: "#EF4444" }
   };
 
-  const distance = (x1: number, y1: number, x2: number, y2: number) => {
+  const getTaskSize = useCallback((priority, isHovered = false, isDragged = false) => {
+    let baseSize;
+    switch (priority) {
+      case 'high': baseSize = 80; break;
+      case 'medium': baseSize = 65; break;
+      case 'low': baseSize = 50; break;
+      default: baseSize = 65;
+    }
+    if (isHovered && isDragged) return baseSize * 1.5;
+    return baseSize;
+  }, []);
+
+  const getDistance = useCallback((x1, y1, x2, y2) => {
     return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-  };
+  }, []);
 
-  const blendColors = (color1: string, color2: string) => {
-    // Simple color blending - convert hex to RGB, blend, convert back
+  const blendColors = useCallback((color1, color2) => {
     const hex1 = color1.replace('#', '');
     const hex2 = color2.replace('#', '');
-    
     const r1 = parseInt(hex1.substr(0, 2), 16);
     const g1 = parseInt(hex1.substr(2, 2), 16);
     const b1 = parseInt(hex1.substr(4, 2), 16);
-    
     const r2 = parseInt(hex2.substr(0, 2), 16);
     const g2 = parseInt(hex2.substr(2, 2), 16);
     const b2 = parseInt(hex2.substr(4, 2), 16);
-    
     const r = Math.round((r1 + r2) / 2);
     const g = Math.round((g1 + g2) / 2);
     const b = Math.round((b1 + b2) / 2);
-    
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-  };
+  }, []);
 
-  // Check if two tasks are overlapping
-  const getOverlappingTask = (draggedTask: Task, currentPos: { x: number, y: number }) => {
-    const draggedSize = getTaskSize(draggedTask.priority);
-    
-    return tasks.find(task => {
-      if (task.id === draggedTask.id) return false;
-      
-      const taskSize = getTaskSize(task.priority);
-      const dx = currentPos.x - task.x;
-      const dy = currentPos.y - task.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      
-      // Check if circles are overlapping
-      return distance < (draggedSize + taskSize) / 2;
-    });
-  };
-
-  const findTaskAtPosition = (mouseX: number, mouseY: number) => {
+  const getTaskUnderMouse = useCallback((mouseX, mouseY) => {
     return tasks.find(task => {
       const size = getTaskSize(task.priority);
-      return distance(mouseX, mouseY, task.x, task.y) <= size / 2;
+      const distance = getDistance(mouseX, mouseY, task.x, task.y);
+      return distance <= size / 2;
     });
-  };
+  }, [tasks, getTaskSize, getDistance]);
 
-  const getWeekDate = (weekNumber: number) => {
-    const startDate = new Date(2024, 0, 1);
-    const weekDate = new Date(startDate.getTime() + (weekNumber - 1) * 7 * 24 * 60 * 60 * 1000);
-    return weekDate.toLocaleDateString();
-  };
+  const getWeekDate = useCallback((weekNumber) => {
+    const startDate = new Date('2025-06-23');
+    const targetDate = new Date(startDate);
+    targetDate.setDate(startDate.getDate() + (weekNumber - 1) * 7);
+    return targetDate.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+  }, []);
 
-  // Drag state tracking
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
-  const [dragStartTime, setDragStartTime] = useState(0);
-
-  // Helper function to convert screen coordinates to SVG coordinates
-  const screenToSVG = (screenX: number, screenY: number) => {
-    if (!canvasRef.current) return { x: screenX, y: screenY };
-    
-    const rect = canvasRef.current.getBoundingClientRect();
-    const svgX = ((screenX - rect.left) / rect.width) * 1200;
-    const svgY = ((screenY - rect.top) / rect.height) * 900;
-    
-    return { x: svgX, y: svgY };
-  };
-
-  // Event handlers
-  const handleMouseDown = (e: React.MouseEvent, task: Task) => {
+  const handleMouseDown = useCallback((e, task) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (canvasRef.current) {
-      const startPos = screenToSVG(e.clientX, e.clientY);
-      setMousePos(startPos);
-      setDragStartPos(startPos);
-      setDragStartTime(Date.now());
-      setDraggedTask(task);
-      setIsDragging(false);
-      
-      // Check for shift+click to start connection
-      if (e.shiftKey) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Prevent any browser tooltips or context menus
-        document.body.style.userSelect = 'none';
-        
-        if (connectingFrom && connectingFrom.id === task.id) {
-          // Cancel connection if clicking same task
-          setConnectingFrom(null);
-          console.log('Connection cancelled');
-        } else if (connectingFrom) {
-          // Complete connection - check if connection already exists
-          const connectionExists = connections.some(conn => 
+    const rect = canvasRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    setClickStartPos({ x: mouseX, y: mouseY });
+    
+    if (e.shiftKey) {
+      if (connectingFrom) {
+        if (connectingFrom.id !== task.id) {
+          const existingConnection = connections.find(conn => 
             (conn.from === connectingFrom.id && conn.to === task.id) ||
             (conn.from === task.id && conn.to === connectingFrom.id)
           );
           
-          if (!connectionExists) {
-            const newConnection: Connection = {
-              id: Math.max(...connections.map(c => c.id), 0) + 1,
+          if (!existingConnection) {
+            const newConnection = {
+              id: Date.now(),
               from: connectingFrom.id,
               to: task.id
             };
-            console.log('Creating connection:', newConnection);
-            
-            // Force immediate state update
-            setConnections(prev => {
-              const updated = [...prev, newConnection];
-              console.log('Updated connections:', updated);
-              // Force re-render by updating a dummy state
-              setTimeout(() => {
-                console.log('Connection should now be visible:', updated);
-              }, 100);
-              return updated;
-            });
-          } else {
-            console.log('Connection already exists');
+            const updatedConnections = [...connections, newConnection];
+            setConnections(updatedConnections);
+            localStorage.setItem('thesis-timeline-connections', JSON.stringify(updatedConnections));
           }
-          setConnectingFrom(null);
-        } else {
-          // Start connection
-          setConnectingFrom(task);
-          console.log('Starting connection from task:', task.id);
         }
-        
-        // Restore user selection after a delay
-        setTimeout(() => {
-          document.body.style.userSelect = '';
-        }, 100);
-        
-        return;
-      }
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (canvasRef.current) {
-      const currentMousePos = screenToSVG(e.clientX, e.clientY);
-
-      // Always update mouse position for connection line
-      setMousePos(currentMousePos);
-
-      // Handle dragging
-      if (draggedTask && !isDragging && !connectingFrom) {
-        const dragDistance = distance(currentMousePos.x, currentMousePos.y, dragStartPos.x, dragStartPos.y);
-        if (dragDistance > 3) { // Reduced threshold for smoother dragging
-          setIsDragging(true);
-        }
-      }
-
-      // Update task position in real-time while dragging
-      if (isDragging && draggedTask) {
-        const overlappingTask = getOverlappingTask(draggedTask, currentMousePos);
-        
-        setTasks(prevTasks => 
-          prevTasks.map(task => {
-            if (task.id === draggedTask.id) {
-              // If overlapping with another task, blend colors
-              const newColor = overlappingTask 
-                ? blendColors(draggedTask.color, overlappingTask.color)
-                : draggedTask.color;
-              
-              return { 
-                ...task, 
-                x: currentMousePos.x, 
-                y: currentMousePos.y,
-                color: newColor
-              };
-            }
-            return task;
-          })
-        );
-      }
-    }
-  };
-
-  const handleTaskDoubleClick = (task: Task) => {
-    // Only open modal if not dragging and not connecting
-    if (!isDragging && !connectingFrom) {
-      setSelectedTask(task);
-      setNotesText(task.notes || '');
-      setCalendarAlert(task.calendarAlert || false);
-    }
-  };
-
-  const handleTaskResize = (taskId: number, newPriority: 'low' | 'medium' | 'high') => {
-    setTasks(prevTasks => 
-      prevTasks.map(task => 
-        task.id === taskId 
-          ? { ...task, priority: newPriority }
-          : task
-      )
-    );
-    console.log(`Task ${taskId} resized to ${newPriority}`);
-  };
-
-  const handleMouseUp = (e: React.MouseEvent) => {
-    if (draggedTask && !connectingFrom) {
-      const dragTime = Date.now() - dragStartTime;
-      const dragDist = distance(mousePos.x, mousePos.y, dragStartPos.x, dragStartPos.y);
-      
-      // If it was a short click without much movement, don't treat as drag
-      if (!isDragging && dragTime < 200 && dragDist < 3) {
-        // Just a click, don't move the task
-        setTasks(prevTasks => 
-          prevTasks.map(task => 
-            task.id === draggedTask.id 
-              ? { ...task, x: dragStartPos.x, y: dragStartPos.y }
-              : task
-          )
-        );
-      }
-      // If dragging, position is already updated in real-time
-    }
-    setDraggedTask(null);
-    setIsDragging(false);
-  };
-
-  const handleConnectionClick = (connection: Connection) => {
-    setSelectedConnection(connection);
-  };
-
-  const handleCanvasClick = (e: React.MouseEvent) => {
-    if (canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-      
-      const clickedTask = findTaskAtPosition(clickX, clickY);
-      if (!clickedTask) {
-        setSelectedConnection(null);
         setConnectingFrom(null);
+      } else {
+        setConnectingFrom(task);
+      }
+      return;
+    }
+    
+    dragOffset.current = {
+      x: mouseX - task.x,
+      y: mouseY - task.y
+    };
+    
+    setDraggedTask(task);
+    isDragging.current = true;
+  }, [connections, connectingFrom]);
+
+  const handleMouseMove = useCallback((e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    setMousePos({ x: mouseX, y: mouseY });
+    
+    if (!isDragging.current || !draggedTask) {
+      const taskUnder = getTaskUnderMouse(mouseX, mouseY);
+      setHoveredTask(taskUnder);
+      return;
+    }
+    
+    const newX = mouseX - dragOffset.current.x;
+    const newY = mouseY - dragOffset.current.y;
+    
+    const taskUnder = getTaskUnderMouse(mouseX, mouseY);
+    setHoveredTask(taskUnder && taskUnder.id !== draggedTask.id ? taskUnder : null);
+    
+    setTasks(tasks.map(task => 
+      task.id === draggedTask.id 
+        ? { ...task, x: Math.max(50, Math.min(newX, 1100)), y: Math.max(50, Math.min(newY, 850)) }
+        : task
+    ));
+  }, [draggedTask, getTaskUnderMouse, tasks]);
+
+  // Handle double-click on tasks to open modal
+  const handleTaskDoubleClick = useCallback((task) => {
+    setSelectedTask(task);
+  }, []);
+
+  const handleMouseUp = useCallback((e) => {
+    if (clickStartPos && draggedTask) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const dragDistance = getDistance(clickStartPos.x, clickStartPos.y, mouseX, mouseY);
+      
+      // Removed single-click modal opening - now only double-click opens modal
+      
+      if (hoveredTask && draggedTask && hoveredTask.id !== draggedTask.id) {
+        const blendedColor = blendColors(draggedTask.color, hoveredTask.color);
+        setTasks(prev => prev.map(task => 
+          task.id === hoveredTask.id 
+            ? { ...task, color: blendedColor }
+            : task
+        ));
       }
     }
-  };
+    
+    isDragging.current = false;
+    setDraggedTask(null);
+    setHoveredTask(null);
+    setClickStartPos(null);
+  }, [clickStartPos, draggedTask, getDistance, hoveredTask, blendColors]);
 
-  // Task management functions
-  const saveNotes = () => {
-    if (selectedTask) {
-      setTasks(prevTasks =>
-        prevTasks.map(task =>
-          task.id === selectedTask.id
-            ? { ...task, notes: notesText, calendarAlert }
-            : task
-        )
-      );
-    }
-  };
+  const handleConnectionClick = useCallback((connection, e) => {
+    e.stopPropagation();
+    setSelectedConnection(connection);
+  }, []);
 
-  const deleteTask = () => {
-    if (selectedTask) {
-      setTasks(prevTasks => prevTasks.filter(task => task.id !== selectedTask.id));
-      setConnections(prevConnections => 
-        prevConnections.filter(conn => 
-          conn.from !== selectedTask.id && conn.to !== selectedTask.id
-        )
-      );
-      setSelectedTask(null);
-    }
-  };
-
-  const changePriority = (priority: string) => {
-    if (selectedTask) {
-      setTasks(prevTasks =>
-        prevTasks.map(task =>
-          task.id === selectedTask.id
-            ? { ...task, priority }
-            : task
-        )
-      );
-      setSelectedTask(prev => prev ? { ...prev, priority } : null);
-    }
-  };
-
-  const deleteConnection = () => {
+  const deleteConnection = useCallback(() => {
     if (selectedConnection) {
-      setConnections(prevConnections => 
-        prevConnections.filter(conn => conn.id !== selectedConnection.id)
-      );
+      const updatedConnections = connections.filter(conn => conn.id !== selectedConnection.id);
+      setConnections(updatedConnections);
+      localStorage.setItem('thesis-timeline-connections', JSON.stringify(updatedConnections));
       setSelectedConnection(null);
     }
-  };
+  }, [connections, selectedConnection]);
 
-  const addTask = () => {
-    const newTask: Task = {
-      id: Math.max(...tasks.map(t => t.id)) + 1,
-      title: "Nueva Tarea",
-      chapter: 1,
-      startWeek: 1,
-      duration: 1,
-      color: "#3498db",
-      priority: "media",
-      x: 200,
-      y: 200,
-      notes: "",
-      calendarAlert: false
+  const handleCanvasClick = useCallback((e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const taskUnder = getTaskUnderMouse(mouseX, mouseY);
+    
+    if (!taskUnder) {
+      setConnectingFrom(null);
+      setSelectedConnection(null);
+      setSelectedTask(null);
+    }
+  }, [getTaskUnderMouse]);
+
+  const saveNotes = useCallback(() => {
+    const updatedTasks = tasks.map(task => 
+      task.id === selectedTask.id 
+        ? { ...task, notes: notesText, calendarAlert: calendarAlert }
+        : task
+    );
+    setTasks(updatedTasks);
+    
+    // Save to localStorage
+    localStorage.setItem('thesis-timeline-tasks', JSON.stringify(updatedTasks));
+    
+    setSelectedTask(null);
+    setNotesText('');
+  }, [selectedTask, notesText, calendarAlert, tasks]);
+
+  const addNewTask = useCallback(() => {
+    if (newTaskTitle.trim()) {
+      const newTask = {
+        id: Math.max(...tasks.map(t => t.id)) + 1,
+        title: newTaskTitle,
+        chapter: 1,
+        startWeek: Math.max(...tasks.map(t => t.startWeek)) + 1,
+        duration: 1,
+        color: "#8B5CF6",
+        priority: "medium",
+        x: 300 + Math.random() * 400,
+        y: 300 + Math.random() * 200,
+        notes: "",
+        calendarAlert: false
+      };
+      const updatedTasks = [...tasks, newTask];
+      setTasks(updatedTasks);
+      localStorage.setItem('thesis-timeline-tasks', JSON.stringify(updatedTasks));
+      setNewTaskTitle('');
+    }
+  }, [newTaskTitle, tasks]);
+
+  const deleteTask = useCallback((taskId) => {
+    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    setTasks(updatedTasks);
+    localStorage.setItem('thesis-timeline-tasks', JSON.stringify(updatedTasks));
+    
+    const updatedConnections = connections.filter(conn => conn.from !== taskId && conn.to !== taskId);
+    setConnections(updatedConnections);
+    localStorage.setItem('thesis-timeline-connections', JSON.stringify(updatedConnections));
+    if (selectedTask && selectedTask.id === taskId) {
+      setSelectedTask(null);
+    }
+  }, [selectedTask, tasks]);
+
+  const changePriority = useCallback((taskId) => {
+    const priorities = ['low', 'medium', 'high'];
+    setTasks(prev => prev.map(task => {
+      if (task.id === taskId) {
+        const currentIndex = priorities.indexOf(task.priority);
+        const nextIndex = (currentIndex + 1) % priorities.length;
+        return { ...task, priority: priorities[nextIndex] };
+      }
+      return task;
+    }));
+  }, []);
+
+  const randomizePositions = useCallback(() => {
+    setTasks(prev => prev.map(task => ({
+      ...task,
+      x: 100 + Math.random() * 900,
+      y: 100 + Math.random() * 700
+    })));
+  }, []);
+
+  const exportToCSV = useCallback(() => {
+    const csvHeader = `"Title","Start Date","Duration (weeks)","Chapter","Priority","Notes","Calendar Alert"\n`;
+    const csvRows = tasks.map(task => 
+      `"${task.title}","${getWeekDate(task.startWeek)}","${task.duration}","Chapter ${task.chapter}","${task.priority}","${task.notes.replace(/"/g, '""')}","${task.calendarAlert ? 'Yes' : 'No'}"`
+    ).join('\n');
+    
+    const blob = new Blob([csvHeader + csvRows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'thesis_timeline_scattered.csv';
+    a.click();
+  }, [tasks, getWeekDate]);
+
+  const exportToJSON = useCallback(() => {
+    const data = {
+      tasks: tasks,
+      connections: connections,
+      exportDate: new Date().toISOString(),
+      version: '1.0'
     };
-    setTasks(prev => [...prev, newTask]);
-  };
-
-  const exportToJSON = () => {
-    const data = { tasks, connections };
+    
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'timeline.json';
+    a.download = `research-timeline-backup-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
-    URL.revokeObjectURL(url);
-  };
+  }, [tasks, connections]);
 
-  const importFromJSON = (file: File) => {
+  const importFromJSON = useCallback((file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const data = JSON.parse(e.target?.result as string);
-        if (data.tasks) setTasks(data.tasks);
-        if (data.connections) setConnections(data.connections);
+        const data = JSON.parse(e.target.result);
+        
+        if (data.tasks && Array.isArray(data.tasks)) {
+          setTasks(data.tasks);
+          localStorage.setItem('thesis-timeline-tasks', JSON.stringify(data.tasks));
+        }
+        
+        if (data.connections && Array.isArray(data.connections)) {
+          setConnections(data.connections);
+          localStorage.setItem('thesis-timeline-connections', JSON.stringify(data.connections));
+        }
+        
+        alert('Datos importados exitosamente!');
       } catch (error) {
-        console.error('Error importing JSON:', error);
+        console.error('Error importing data:', error);
+        alert('Error al importar los datos. Verifica que el archivo sea válido.');
       }
     };
     reader.readAsText(file);
-  };
+  }, []);
 
-  // Filtered tasks
-  const filteredTasks = useMemo(() => {
-    return tasks.filter(task => {
-      const chapterMatch = chapterFilter === 'all' || task.chapter.toString() === chapterFilter;
-      const priorityMatch = priorityFilter === 'all' || task.priority === priorityFilter;
-      return chapterMatch && priorityMatch;
-    });
-  }, [tasks, chapterFilter, priorityFilter]);
 
-  // Update selected task when tasks change
-  useEffect(() => {
-    if (selectedTask) {
-      const updatedTask = tasks.find(t => t.id === selectedTask.id);
-      if (updatedTask) {
-        setSelectedTask(updatedTask);
-        setNotesText(updatedTask.notes || '');
-        setCalendarAlert(updatedTask.calendarAlert || false);
-      }
-    }
-  }, [tasks, selectedTask]);
+
+  const filteredTasks = useMemo(() => 
+    selectedChapter === 'all' 
+      ? tasks 
+      : tasks.filter(task => task.chapter === parseInt(selectedChapter))
+  , [tasks, selectedChapter]);
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        {/* App Bar */}
-        <AppBar position="static" elevation={2}>
+        {/* Material UI App Bar */}
+        <AppBar position="static" elevation={1}>
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              📊 Research Timeline
+            <Typography variant="h6" component="h1" sx={{ flexGrow: 1 }}>
+              Cronograma de Investigación Distribuida
             </Typography>
             <FormControlLabel
               control={
@@ -568,92 +478,111 @@ const ScatteredThesisTimeline = () => {
                   color="default"
                 />
               }
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {darkMode ? <Brightness7 /> : <Brightness4 />}
-                  {darkMode ? 'Light' : 'Dark'}
-                </Box>
-              }
+              label={darkMode ? <Brightness4 /> : <Brightness7 />}
+              sx={{ mr: 2 }}
             />
           </Toolbar>
         </AppBar>
 
         {/* Main Content */}
-        <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {/* Controls */}
-          <Paper elevation={2} sx={{ p: 2 }}>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
-              {/* Filters */}
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <InputLabel>Capítulo</InputLabel>
-                <Select
-                  value={chapterFilter}
-                  label="Capítulo"
-                  onChange={(e) => setChapterFilter(e.target.value)}
-                >
-                  <MenuItem value="all">Todos</MenuItem>
-                  {Object.entries(chapters).map(([num, chapter]) => (
-                    <MenuItem key={num} value={num}>{num}. {chapter.name}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+        <Box sx={{ p: 3 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Explora tu investigación de forma no-lineal. Arrastra para mover, doble-click para abrir detalles, Shift+Click para conectar.
+          </Typography>
 
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <InputLabel>Prioridad</InputLabel>
-                <Select
-                  value={priorityFilter}
-                  label="Prioridad"
-                  onChange={(e) => setPriorityFilter(e.target.value)}
-                >
-                  <MenuItem value="all">Todas</MenuItem>
-                  <MenuItem value="high">Alta</MenuItem>
-                  <MenuItem value="medium">Media</MenuItem>
-                  <MenuItem value="low">Baja</MenuItem>
-                </Select>
-              </FormControl>
+          {/* Controls Panel */}
+          <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
+                {/* Chapter Filter */}
+                <FormControl size="small" sx={{ minWidth: 150 }}>
+                  <InputLabel>Capítulo</InputLabel>
+                  <Select
+                    value={selectedChapter}
+                    onChange={(e) => setSelectedChapter(e.target.value)}
+                    label="Capítulo"
+                  >
+                    <MenuItem value="all">Todos</MenuItem>
+                    {Object.entries(chapters).map(([num, { name }]) => (
+                      <MenuItem key={num} value={num}>{`Cap. ${num}: ${name}`}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {/* New Task Input */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" color="text.secondary">Nueva tarea:</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <input
+                      type="text"
+                      placeholder="Título de la tarea..."
+                      value={newTaskTitle}
+                      onChange={(e) => setNewTaskTitle(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addNewTask()}
+                      style={{
+                        padding: '8px 12px',
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        width: '200px',
+                        backgroundColor: theme.palette.background.paper,
+                        color: theme.palette.text.primary,
+                      }}
+                    />
+                    <IconButton onClick={addNewTask} color="primary" size="small">
+                      <Add />
+                    </IconButton>
+                  </Box>
+                </Box>
+              </Box>
 
               {/* Action Buttons */}
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={addTask}
-                size="small"
-              >
-                Nueva Tarea
-              </Button>
-
-              <Button
-                variant="outlined"
-                startIcon={<GetApp />}
-                onClick={exportToJSON}
-                size="small"
-              >
-                Exportar
-              </Button>
-
-              <input
-                type="file"
-                accept=".json"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    importFromJSON(file);
-                    e.target.value = '';
-                  }
-                }}
-                style={{ display: 'none' }}
-                id="import-file"
-              />
-              <label htmlFor="import-file">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Button
+                  onClick={randomizePositions}
+                  startIcon={<Casino />}
                   variant="outlined"
-                  startIcon={<Upload />}
-                  component="span"
                   size="small"
                 >
-                  Importar
+                  Aleatorizar
                 </Button>
-              </label>
+                <Button
+                  onClick={exportToCSV}
+                  startIcon={<GetApp />}
+                  variant="outlined"
+                  size="small"
+                  color="success"
+                >
+                  CSV
+                </Button>
+                <Button
+                  onClick={exportToJSON}
+                  startIcon={<GetApp />}
+                  variant="outlined"
+                  size="small"
+                  color="secondary"
+                >
+                  JSON
+                </Button>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={importFromJSON}
+                  style={{ display: 'none' }}
+                  id="json-import"
+                />
+                <label htmlFor="json-import">
+                  <Button
+                    component="span"
+                    startIcon={<Upload />}
+                    variant="outlined"
+                    size="small"
+                    color="warning"
+                  >
+                    Importar
+                  </Button>
+                </label>
+              </Box>
             </Box>
           </Paper>
 
@@ -729,7 +658,6 @@ const ScatteredThesisTimeline = () => {
               handleConnectionClick={handleConnectionClick}
               handleMouseDown={handleMouseDown}
               handleTaskDoubleClick={handleTaskDoubleClick}
-              handleTaskResize={handleTaskResize}
               getTaskSize={getTaskSize}
               blendColors={blendColors}
               filteredTasks={filteredTasks}

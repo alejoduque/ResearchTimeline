@@ -1,0 +1,72 @@
+/* App.css - Global styles for Research Timeline */
+
+/* CSS Variables for task label colors */
+:root {
+  --task-label-color-dark: #D1D5DB;
+  --task-label-color-light: #4B5563;
+}
+
+/* Disable tooltips during connection mode */
+.no-tooltips * {
+  pointer-events: none !important;
+}
+
+.no-tooltips .clickable-area {
+  pointer-events: all !important;
+}
+
+[data-theme="dark"] {
+  --task-label-color: #D1D5DB; /* Light grey for dark mode */
+}
+
+/* Grid background for the canvas area */
+.timeline-canvas {
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Dark mode grid background */
+.timeline-canvas.dark {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Ensure full viewport coverage */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
