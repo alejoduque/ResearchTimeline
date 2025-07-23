@@ -269,18 +269,48 @@ const ScatteredThesisTimeline = () => {
     return { x: svgX, y: svgY };
   };
 
+  // State for double-click detection
+  const [clickTimeout, setClickTimeout] = useState<number | null>(null);
+  const [lastClickTime, setLastClickTime] = useState(0);
+  const [lastClickedTask, setLastClickedTask] = useState<Task | null>(null);
+
   // Event handlers
   const handleMouseDown = (e: React.MouseEvent, task: Task) => {
     e.preventDefault();
     e.stopPropagation();
     
+    const currentTime = Date.now();
+    const timeDiff = currentTime - lastClickTime;
+    
+    // Check if this is a potential double-click (within 500ms and same task)
+    if (timeDiff < 500 && lastClickedTask?.id === task.id) {
+      // This is a double-click, cancel any pending drag setup
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+        setClickTimeout(null);
+      }
+      // Don't set up drag for double-clicks
+      setLastClickTime(currentTime);
+      setLastClickedTask(task);
+      return;
+    }
+    
     if (canvasRef.current) {
       const startPos = screenToSVG(e.clientX, e.clientY);
       setMousePos(startPos);
-      setDragStartPos(startPos);
-      setDragStartTime(Date.now());
-      setDraggedTask(task);
-      setIsDragging(false);
+      setLastClickTime(currentTime);
+      setLastClickedTask(task);
+      
+      // Set up drag with a small delay to allow double-click detection
+      const timeout = setTimeout(() => {
+        setDragStartPos(startPos);
+        setDragStartTime(Date.now());
+        setDraggedTask(task);
+        setIsDragging(false);
+        setClickTimeout(null);
+      }, 150); // Shorter delay for better responsiveness
+      
+      setClickTimeout(timeout);
       
       // Check for shift+click to start connection
       if (e.shiftKey) {
@@ -289,6 +319,20 @@ const ScatteredThesisTimeline = () => {
         
         // Prevent any browser tooltips or context menus
         document.body.style.userSelect = 'none';
+        (document.body.style as any).webkitUserSelect = 'none';
+        (document.body.style as any).mozUserSelect = 'none';
+        (document.body.style as any).msUserSelect = 'none';
+        
+        // Disable any potential browser tooltips or banners
+        document.body.setAttribute('title', '');
+        document.documentElement.style.setProperty('--webkit-tap-highlight-color', 'transparent');
+        
+        // Hide any existing tooltips
+        const tooltips = document.querySelectorAll('[title]');
+        tooltips.forEach(el => {
+          el.setAttribute('data-original-title', el.getAttribute('title') || '');
+          el.removeAttribute('title');
+        });
         
         if (connectingFrom && connectingFrom.id === task.id) {
           // Cancel connection if clicking same task

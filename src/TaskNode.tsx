@@ -19,17 +19,18 @@ const TaskNode = ({
 
   return (
     <g className="cursor-pointer">
-      {/* Larger invisible clickable area for easier connection creation */}
-      <circle 
-        cx={task.x} 
-        cy={task.y} 
-        r={size * 0.8} 
-        fill="transparent" 
-        stroke="none"
-        onMouseDown={(e) => handleMouseDown(e, task)} 
-        onDoubleClick={() => handleTaskDoubleClick(task)}
-        className="cursor-pointer clickable-area"
-      />
+      {/* Larger invisible clickable area for easier connection creation - only active during connection mode */}
+      {isConnecting && (
+        <circle 
+          cx={task.x} 
+          cy={task.y} 
+          r={size * 0.8} 
+          fill="transparent" 
+          stroke="none"
+          onMouseDown={(e) => handleMouseDown(e, task)}
+          className="cursor-pointer clickable-area"
+        />
+      )}
       <circle
         cx={task.x} cy={task.y} r={size / 2 + 3} fill={displayColor}
         className={`transition-all duration-200 ${isDragged ? 'opacity-30' : 'opacity-20'}`}
@@ -39,6 +40,8 @@ const TaskNode = ({
         stroke={isConnecting ? "#8B5CF6" : "white"}
         strokeWidth={isConnecting ? "4" : "3"}
         className={`transition-all duration-200 ${isDragged ? 'opacity-80 scale-105' : 'hover:scale-105'} drop-shadow-md`}
+        onMouseDown={(e) => handleMouseDown(e, task)}
+        onDoubleClick={() => handleTaskDoubleClick(task)}
       />
       <text x={task.x} y={task.y} textAnchor="middle" dy="0.3em" className="text-sm font-bold fill-white pointer-events-none select-none">
         {task.startWeek}
