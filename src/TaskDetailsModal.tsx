@@ -19,8 +19,6 @@ import {
 import {
   Close as CloseIcon,
   Save as SaveIcon,
-  Refresh as RefreshIcon,
-  Delete as DeleteIcon,
   MenuBook as BookIcon
 } from '@mui/icons-material';
 import styles from './TaskDetailsModal.module.css';
@@ -293,27 +291,6 @@ Escribe tus ideas, investigación, recursos y cualquier información relevante p
           sx={{ mr: 1 }}
         >
           Guardar Notas
-        </Button>
-        
-        <Button
-          onClick={() => {
-            setNotesText('');
-            setCalendarAlert(false);
-          }}
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          color="warning"
-        >
-          Limpiar
-        </Button>
-        
-        <Button
-          onClick={deleteTask}
-          variant="outlined"
-          startIcon={<DeleteIcon />}
-          color="error"
-        >
-          Eliminar
         </Button>
       </DialogActions>
     </Dialog>

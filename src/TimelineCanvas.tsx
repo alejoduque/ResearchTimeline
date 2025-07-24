@@ -12,6 +12,7 @@ const TimelineCanvas = ({
   canvasRef,
   handleMouseMove,
   handleMouseUp,
+  handleTouchEnd,
   handleCanvasClick,
   handleConnectionClick,
   handleMouseDown,
@@ -33,6 +34,7 @@ const TimelineCanvas = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onTouchEnd={handleTouchEnd}
         onClick={handleCanvasClick}
       >
         <defs>
@@ -65,7 +67,7 @@ const TimelineCanvas = ({
           
           return (
             <g key={connection.id} onClick={(e) => handleConnectionClick(connection, e)} className="cursor-pointer">
-              <line x1={fromX} y1={fromY} x2={toX} y2={toY} stroke="#9CA3AF" strokeWidth="8" strokeOpacity="0" />
+              <line x1={fromX} y1={fromY} x2={toX} y2={toY} stroke="#9CA3AF" strokeWidth="20" strokeOpacity="0" />
               <line
                 x1={fromX}
                 y1={fromY}

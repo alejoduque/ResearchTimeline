@@ -39,7 +39,7 @@ const TaskNode = ({
         cx={task.x} cy={task.y} r={size / 2} fill={displayColor}
         stroke={isConnecting ? "#8B5CF6" : "white"}
         strokeWidth={isConnecting ? "4" : "3"}
-        className={`transition-all duration-200 ${isDragged ? 'opacity-80 scale-105' : 'hover:scale-105'} drop-shadow-md`}
+        className={`transition-all duration-200 ${isDragged ? 'opacity-80 scale-105' : isHovered && isConnecting ? 'brightness-150 scale-110' : 'hover:scale-105'} drop-shadow-md`}
         onMouseDown={(e) => handleMouseDown(e, task)}
         onDoubleClick={() => handleTaskDoubleClick(task)}
       />
@@ -77,8 +77,6 @@ const TaskNode = ({
           
           if (e.shiftKey) {
             // Shift+Drag resize mode - start resize operation
-            console.log(`Starting resize for task ${task.id}`);
-            // TODO: Implement drag resize logic
             // For now, cycle through priorities as fallback
             const priorities = ['low', 'medium', 'high'] as const;
             const currentIndex = priorities.indexOf(task.priority as any);
@@ -88,7 +86,6 @@ const TaskNode = ({
             if (handleTaskResize) {
               handleTaskResize(task.id, newPriority);
             }
-            console.log(`Resized task ${task.id} from ${task.priority} to ${newPriority}`);
           } else {
             // Simple click - cycle through priority levels
             const priorities = ['low', 'medium', 'high'] as const;
@@ -99,7 +96,6 @@ const TaskNode = ({
             if (handleTaskResize) {
               handleTaskResize(task.id, newPriority);
             }
-            console.log(`Clicked resize: ${task.id} from ${task.priority} to ${newPriority}`);
           }
         }}
       />

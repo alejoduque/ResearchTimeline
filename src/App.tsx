@@ -37,22 +37,22 @@ const ScatteredThesisTimeline = () => {
         const parsed = JSON.parse(savedTasks);
         // Merge saved notes with default task structure
         const defaultTasks = [
-          // Chapter 1
+          // Chapter 1 - Material UI Blue
           { id: 1, title: "Bioacústica - Más allá del antropocentrismo sonoro", chapter: 1, startWeek: 1, duration: 1, color: "#3B82F6", priority: "high", x: 150, y: 120, notes: "", calendarAlert: false },
           { id: 2, title: "Encuentro Entre Especies y Espectros [e4]", chapter: 1, startWeek: 2, duration: 1, color: "#3B82F6", priority: "high", x: 320, y: 80, notes: "", calendarAlert: false },
           { id: 3, title: "Artes de la Transmisión (Full spectrum radio)", chapter: 1, startWeek: 3, duration: 1, color: "#3B82F6", priority: "medium", x: 480, y: 140, notes: "", calendarAlert: false },
           { id: 4, title: "Inteligencia de máquinas y arte (Google AMI)", chapter: 1, startWeek: 4, duration: 1, color: "#3B82F6", priority: "high", x: 680, y: 100, notes: "", calendarAlert: false },
           { id: 5, title: "Monitoreo y Sonificación (Wildlabs)", chapter: 1, startWeek: 5, duration: 1, color: "#3B82F6", priority: "medium", x: 820, y: 160, notes: "", calendarAlert: false },
           
-          // Chapter 2
+          // Chapter 2 - Material UI Green
           { id: 6, title: "Sub/culturas - Reinventar/reconstruir", chapter: 2, startWeek: 6, duration: 1, color: "#10B981", priority: "high", x: 180, y: 280, notes: "", calendarAlert: false },
-          { id: 7, title: "Tec-sincretismo (EGS)", chapter: 2, startWeek: 7, duration: 1, color: "#10B981", priority: "medium", x: 350, y: 320, notes: "", calendarAlert: false },
-          { id: 8, title: "Espectros sonoros", chapter: 2, startWeek: 8, duration: 1, color: "#10B981", priority: "medium", x: 520, y: 260, notes: "", calendarAlert: false },
-          { id: 9, title: "De IAP a DAO", chapter: 2, startWeek: 9, duration: 1, color: "#10B981", priority: "high", x: 720, y: 300, notes: "", calendarAlert: false },
+          { id: 7, title: "Ecologías de la escucha", chapter: 2, startWeek: 7, duration: 1, color: "#10B981", priority: "medium", x: 350, y: 240, notes: "", calendarAlert: false },
+          { id: 8, title: "Paisajes sonoros y cartografías acústicas", chapter: 2, startWeek: 8, duration: 1, color: "#10B981", priority: "high", x: 520, y: 300, notes: "", calendarAlert: false },
+          { id: 9, title: "Tecnologías de grabación y archivo", chapter: 2, startWeek: 9, duration: 1, color: "#10B981", priority: "medium", x: 720, y: 260, notes: "", calendarAlert: false },
           { id: 10, title: "Parlamento de lo vivo - Édouard Glissant", chapter: 2, startWeek: 10, duration: 1, color: "#10B981", priority: "high", x: 890, y: 240, notes: "", calendarAlert: false },
           { id: 11, title: "Agenciamientos multiespecie", chapter: 2, startWeek: 11, duration: 1, color: "#10B981", priority: "medium", x: 1000, y: 320, notes: "", calendarAlert: false },
           
-          // Chapter 3
+          // Chapter 3 - Material UI Amber
           { id: 12, title: "Biocracia - Nueva Gobernanza Inter-especies", chapter: 3, startWeek: 12, duration: 1, color: "#F59E0B", priority: "high", x: 120, y: 450, notes: "", calendarAlert: false },
           { id: 13, title: "Sistemas de información geográfica (SIG)", chapter: 3, startWeek: 13, duration: 1, color: "#F59E0B", priority: "high", x: 300, y: 480, notes: "", calendarAlert: false },
           { id: 14, title: "El jaguar y el ocelote", chapter: 3, startWeek: 14, duration: 1, color: "#F59E0B", priority: "medium", x: 480, y: 420, notes: "", calendarAlert: false },
@@ -65,21 +65,37 @@ const ScatteredThesisTimeline = () => {
           { id: 21, title: "Espacialización sonora", chapter: 3, startWeek: 21, duration: 1, color: "#F59E0B", priority: "medium", x: 750, y: 580, notes: "", calendarAlert: false },
           { id: 22, title: "Monitoreo, IA y análisis de redes", chapter: 3, startWeek: 22, duration: 1, color: "#F59E0B", priority: "high", x: 920, y: 620, notes: "", calendarAlert: false },
           
-          // Review phases
+          // Chapter 4 - Material UI Red
           { id: 23, title: "Revisión integral Capítulo 1", chapter: 4, startWeek: 23, duration: 1, color: "#EF4444", priority: "high", x: 200, y: 720, notes: "", calendarAlert: false },
           { id: 24, title: "Revisión integral Capítulo 2", chapter: 4, startWeek: 24, duration: 1, color: "#EF4444", priority: "high", x: 450, y: 750, notes: "", calendarAlert: false },
           { id: 25, title: "Revisión integral Capítulo 3", chapter: 4, startWeek: 25, duration: 1, color: "#EF4444", priority: "high", x: 700, y: 720, notes: "", calendarAlert: false },
           
-          // Final phases
+          // Chapter 5 - Material UI Purple
           { id: 26, title: "Integración y síntesis final", chapter: 5, startWeek: 26, duration: 1, color: "#8B5CF6", priority: "high", x: 300, y: 850, notes: "", calendarAlert: false },
           { id: 27, title: "Revisión y correcciones finales", chapter: 5, startWeek: 27, duration: 1, color: "#8B5CF6", priority: "high", x: 600, y: 880, notes: "", calendarAlert: false },
           { id: 28, title: "Preparación para defensa", chapter: 5, startWeek: 28, duration: 1, color: "#8B5CF6", priority: "high", x: 450, y: 950, notes: "", calendarAlert: false }
         ];
         
-        return defaultTasks.map(defaultTask => {
+        // Force Material UI colors by only preserving specific fields from localStorage
+        const tasksWithMaterialColors = defaultTasks.map(defaultTask => {
           const savedTask = parsed.find((t: any) => t.id === defaultTask.id);
-          return savedTask ? { ...defaultTask, ...savedTask } : defaultTask;
+          if (savedTask) {
+            return { 
+              ...defaultTask, // Use all defaults including Material UI color
+              notes: savedTask.notes || defaultTask.notes,
+              x: savedTask.x || defaultTask.x,
+              y: savedTask.y || defaultTask.y,
+              calendarAlert: savedTask.calendarAlert || defaultTask.calendarAlert
+              // color, priority, and other properties come from defaultTask (Material UI palette)
+            };
+          }
+          return defaultTask;
         });
+        
+        // Save the updated tasks with Material UI colors back to localStorage
+        localStorage.setItem('thesis-timeline-tasks', JSON.stringify(tasksWithMaterialColors));
+        
+        return tasksWithMaterialColors;
       } catch (error) {
         console.error('Error parsing saved tasks:', error);
       }
@@ -337,41 +353,11 @@ const ScatteredThesisTimeline = () => {
         if (connectingFrom && connectingFrom.id === task.id) {
           // Cancel connection if clicking same task
           setConnectingFrom(null);
-          console.log('Connection cancelled');
-        } else if (connectingFrom) {
-          // Complete connection - check if connection already exists
-          const connectionExists = connections.some(conn => 
-            (conn.from === connectingFrom.id && conn.to === task.id) ||
-            (conn.from === task.id && conn.to === connectingFrom.id)
-          );
-          
-          if (!connectionExists) {
-            const newConnection: Connection = {
-              id: Math.max(...connections.map(c => c.id), 0) + 1,
-              from: connectingFrom.id,
-              to: task.id
-            };
-            console.log('Creating connection:', newConnection);
-            
-            // Force immediate state update
-            setConnections(prev => {
-              const updated = [...prev, newConnection];
-              console.log('Updated connections:', updated);
-              // Force re-render by updating a dummy state
-              setTimeout(() => {
-                console.log('Connection should now be visible:', updated);
-              }, 100);
-              return updated;
-            });
-          } else {
-            console.log('Connection already exists');
-          }
-          setConnectingFrom(null);
-        } else {
-          // Start connection
+        } else if (!connectingFrom) {
+          // Start connection (only if not already connecting)
           setConnectingFrom(task);
-          console.log('Starting connection from task:', task.id);
         }
+        // Connection completion now happens in handleMouseUp
         
         // Restore user selection after a delay
         setTimeout(() => {
@@ -445,6 +431,63 @@ const ScatteredThesisTimeline = () => {
   };
 
   const handleMouseUp = (e: React.MouseEvent) => {
+    handlePointerUp(e.clientX, e.clientY);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.changedTouches.length > 0) {
+      const touch = e.changedTouches[0];
+      handlePointerUp(touch.clientX, touch.clientY);
+    }
+  };
+
+  const handlePointerUp = (clientX: number, clientY: number) => {
+    // Handle connection completion on mouse/touch release
+    if (connectingFrom) {
+      // Find task under mouse/touch position
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (rect) {
+        // Convert screen coordinates to SVG coordinates
+        const screenX = clientX - rect.left;
+        const screenY = clientY - rect.top;
+        
+        // Transform to SVG viewBox coordinates (0 0 1200 900)
+        const svgX = (screenX / rect.width) * 1200;
+        const svgY = (screenY / rect.height) * 900;
+        
+        // Find the task closest to the release position
+        const targetTask = tasks.find(task => {
+          const distance = Math.sqrt((task.x - svgX) ** 2 + (task.y - svgY) ** 2);
+          return distance <= 50; // Increased tolerance to 50px in SVG coordinates
+        });
+        
+        if (targetTask && targetTask.id !== connectingFrom.id) {
+          // Complete connection
+          const connectionExists = connections.some(conn => 
+            (conn.from === connectingFrom.id && conn.to === targetTask.id) ||
+            (conn.from === targetTask.id && conn.to === connectingFrom.id)
+          );
+          
+          if (!connectionExists) {
+            const newConnection: Connection = {
+              id: Math.max(...connections.map(c => c.id), 0) + 1,
+              from: connectingFrom.id,
+              to: targetTask.id
+            };
+            
+            const updatedConnections = [...connections, newConnection];
+            setConnections(updatedConnections);
+            localStorage.setItem('thesis-timeline-connections', JSON.stringify(updatedConnections));
+          }
+        }
+      }
+      
+      // Always clear connecting state on release
+      setConnectingFrom(null);
+      return;
+    }
+    
+    // Handle regular drag completion
     if (draggedTask && !connectingFrom) {
       const dragTime = Date.now() - dragStartTime;
       const dragDist = distance(mousePos.x, mousePos.y, dragStartPos.x, dragStartPos.y);
@@ -524,9 +567,9 @@ const ScatteredThesisTimeline = () => {
 
   const deleteConnection = () => {
     if (selectedConnection) {
-      setConnections(prevConnections => 
-        prevConnections.filter(conn => conn.id !== selectedConnection.id)
-      );
+      const updatedConnections = connections.filter(conn => conn.id !== selectedConnection.id);
+      setConnections(updatedConnections);
+      localStorage.setItem('thesis-timeline-connections', JSON.stringify(updatedConnections));
       setSelectedConnection(null);
     }
   };
@@ -701,23 +744,7 @@ const ScatteredThesisTimeline = () => {
             </Box>
           </Paper>
 
-          {/* Connection Status */}
-          {connectingFrom && (
-            <Paper elevation={1} sx={{ p: 2, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body2">
-                  🔗 Conectando: {connectingFrom.title.substring(0, 20)}...
-                </Typography>
-                <IconButton 
-                  onClick={() => setConnectingFrom(null)} 
-                  size="small" 
-                  sx={{ color: 'inherit' }}
-                >
-                  <Delete />
-                </IconButton>
-              </Box>
-            </Paper>
-          )}
+
 
           {/* Selected Connection Actions */}
           {selectedConnection && (
@@ -769,6 +796,7 @@ const ScatteredThesisTimeline = () => {
               canvasRef={canvasRef}
               handleMouseMove={handleMouseMove}
               handleMouseUp={handleMouseUp}
+              handleTouchEnd={handleTouchEnd}
               handleCanvasClick={handleCanvasClick}
               handleConnectionClick={handleConnectionClick}
               handleMouseDown={handleMouseDown}

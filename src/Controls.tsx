@@ -52,7 +52,7 @@ const Controls = ({
       <div className="flex flex-wrap items-center gap-2">
         {connectingFrom && (
           <div className="flex items-center space-x-2 px-3 py-1.5 bg-purple-100 text-purple-800 rounded-md text-sm">
-            <span>{`Conectando: ${connectingFrom.title.substring(0, 20)}...`}</span>
+
             <button onClick={() => setConnectingFrom(null)} className="text-purple-500 hover:text-purple-700">
               <X className="w-4 h-4" />
             </button>
